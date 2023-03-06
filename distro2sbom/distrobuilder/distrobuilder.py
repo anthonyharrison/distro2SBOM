@@ -3,6 +3,7 @@
 
 import re
 import subprocess
+import unicodedata
 
 
 class DistroBuilder:
