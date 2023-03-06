@@ -3,7 +3,7 @@
 The DISTRO2SBOM generates a
 SBOM (Software Bill of Materials) for either an installed application or a complete system installation in a number of formats including
 [SPDX](https://www.spdx.org) and [CycloneDX](https://www.cyclonedx.org).
-An SBOM for an installed package will identify of all of its dependent components.
+An SBOM for an installed package will identify all of its dependent components.
 
 It is intended to be used as part of a continuous integration system to enable accurate records of SBOMs to be maintained
 and also to support subsequent audit needs to determine if a particular component (and version) has been used.
