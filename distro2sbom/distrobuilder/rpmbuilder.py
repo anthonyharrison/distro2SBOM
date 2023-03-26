@@ -93,7 +93,7 @@ class RpmBuilder(DistroBuilder):
         if package_name in self.distro_packages:
             self.sbom_relationship.initialise()
             self.sbom_relationship.set_relationship(
-                parent.lower(), "DEPENDS_ON", package_name.lower().replace("_", "-")
+                parent, "DEPENDS_ON", package_name.replace("_", "-")
             )
             self.sbom_relationships.append(self.sbom_relationship.get_relationship())
             return 0
@@ -141,7 +141,7 @@ class RpmBuilder(DistroBuilder):
                         requires.append(dependency)
             self.metadata["Depends"] = ",".join(n for n in requires)
             self.sbom_package.initialise()
-            package = self.get("Name").lower().replace("_", "-")
+            package = self.get("Name")
             version = self.get("Version")
             self.sbom_package.set_name(package)
             self.sbom_package.set_version(version)
@@ -180,7 +180,7 @@ class RpmBuilder(DistroBuilder):
             self.sbom_relationship.initialise()
             if parent != "-":
                 self.sbom_relationship.set_relationship(
-                    parent.lower(), "DEPENDS_ON", package
+                    parent, "DEPENDS_ON", package
                 )
             else:
                 self.sbom_relationship.set_relationship(
