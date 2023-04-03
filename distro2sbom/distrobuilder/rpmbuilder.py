@@ -6,6 +6,7 @@ import re
 
 from lib4sbom.data.package import SBOMPackage
 from lib4sbom.data.relationship import SBOMRelationship
+from lib4sbom.license import LicenseScanner
 
 from distro2sbom.distrobuilder.distrobuilder import DistroBuilder
 
@@ -15,6 +16,7 @@ class RpmBuilder(DistroBuilder):
         super().__init__(debug)
         self.sbom_package = SBOMPackage()
         self.sbom_relationship = SBOMRelationship()
+        self.license = LicenseScanner()
         self.distro_packages = []
         self.name = name.replace(" ", "-")
         self.release = release
