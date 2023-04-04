@@ -50,6 +50,8 @@ class RpmBuilder(DistroBuilder):
             )
             self.sbom_relationships.append(self.sbom_relationship.get_relationship())
             for line in lines:
+                # Clear metadata in any case for each line
+                self.metadata = {}
                 line_element = line.strip().rstrip("\n")
                 # Extract the package name (without extension) - make lowercase
                 item = os.path.splitext(os.path.basename(line_element))[0].lower()
@@ -59,15 +61,45 @@ class RpmBuilder(DistroBuilder):
                 if product_version is not None:
                     # Find
                     package = item[: product_version.start()].lower().replace("_", "-")
+                    out = self.run_program(f"rpm -qi {package}")
+                    # Parse output
+                    if len(out) > 0:
+                        for line in out:
+                            if ":" in line:
+                                line_entry = re.sub(" +", " ", line.strip().rstrip("\n"))
+                                entry = line_entry.split(":")
+                                keyword = entry[0].strip()
+                                # store all data after keyword
+                                self.metadata[keyword] = (
+                                    line_entry[len(keyword) + 2 :].strip().rstrip("\n")
+                                )
+                    if len(self.metadata) == 0:
+                        # Package not installed so no metadata
+                        continue
                     self.sbom_package.initialise()
                     version = product_version.group(0)[1:]
                     self.sbom_package.set_name(package)
                     self.sbom_package.set_version(version)
                     self.sbom_package.set_type("application")
                     self.sbom_package.set_filesanalysis(False)
-                    license = "NOASSERTION"
-                    self.sbom_package.set_licensedeclared(license)
+                    license = self.license.find_license(self.get("License"))
+                    # Report license as reported by metadata. If not valid SPDX, report NOASSERTION
+                    if license != self.get("License"):
+                        self.sbom_package.set_licensedeclared("NOASSERTION")
+                    else:
+                        self.sbom_package.set_licensedeclared(license)
+                    # Report license if valid SPDX identifier
+                    self.sbom_package.set_licenseconcluded(license)
+                    # Add comment if metadata license was modified
+                    if len(self.get("License")) > 0 and license != self.get("License"):
+                        self.sbom_package.set_licensecomments(
+                            f"{self.get('Name')} declares {self.get('License')} which is not a valid SPDX License identifier or expression."
+                        )
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
+                    if self.get("Summary") != "":
+                        self.sbom_package.set_summary(self.get("Summary"))
+                    if self.get("URL") != "":
+                        self.sbom_package.set_homepage(self.get("URL"))
                     # Store package data
                     self.sbom_packages[
                         (
