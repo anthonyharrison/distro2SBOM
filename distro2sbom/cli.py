@@ -42,7 +42,6 @@ def inpath(binary):
         )
     )
 
-
 def main(argv=None):
 
     argv = argv or sys.argv
@@ -88,6 +87,13 @@ def main(argv=None):
         action="store",
         help="identity of package within distribution",
     )
+    input_group.add_argument(
+        "-s",
+        "--system",
+        action="store_true",
+        default=False,
+        help="generate SBOM for installed system",
+    )
 
     output_group = parser.add_argument_group("Output")
     output_group.add_argument(
@@ -132,6 +138,7 @@ def main(argv=None):
         "name": "",
         "release": "",
         "package": "",
+        "system" : False,
     }
 
     raw_args = parser.parse_args(argv[1:])
@@ -149,7 +156,7 @@ def main(argv=None):
     elif args["release"] == "":
         print("[ERROR] distro release must be specified.")
         return -1
-    elif args["input_file"] == "" and args["package"] == "":
+    elif args["input_file"] == "" and args["package"] == "" and not args["system"]:
         print("[ERROR] distro file or package name must be specified.")
         return -1
 
@@ -165,6 +172,7 @@ def main(argv=None):
         print("Distro name:", args["name"])
         print("Distro release:", args["release"])
         print("Package:", args["package"])
+        print("System SBOM:", args["system"])
         print("SBOM type:", args["sbom"])
         print("Format:", bom_format)
         print("Output file:", args["output_file"])
@@ -205,6 +213,10 @@ def main(argv=None):
         else:
             print(f"[ERROR] Unable to locate file {args['input_file']}")
             return -1
+    elif args["system"]:
+        if args["debug"]:
+            print ("This may take some time...")
+        sbom_build.process_system()
     else:
         sbom_build.process_distro_package(args["package"])
 

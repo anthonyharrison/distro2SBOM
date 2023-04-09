@@ -39,6 +39,7 @@ class RpmBuilder(DistroBuilder):
             self.sbom_package.set_filesanalysis(False)
             license = "NOASSERTION"
             self.sbom_package.set_licensedeclared(license)
+            self.sbom_package.set_licenseconcluded(license)
             self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
             # Store package data
             self.sbom_packages[
@@ -67,6 +68,7 @@ class RpmBuilder(DistroBuilder):
                     self.sbom_package.set_filesanalysis(False)
                     license = "NOASSERTION"
                     self.sbom_package.set_licensedeclared(license)
+                    self.sbom_package.set_licenseconcluded(license)
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     # Store package data
                     self.sbom_packages[
@@ -174,6 +176,10 @@ class RpmBuilder(DistroBuilder):
                 self.sbom_package.set_summary(self.get("Summary"))
             if self.get("URL") != "":
                 self.sbom_package.set_homepage(self.get("URL"))
+            # External references
+            self.sbom_package.set_externalreference(
+                "PACKAGE-MANAGER", "purl", f"pkg:rpm/{package}@{version}"
+            )
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
@@ -207,3 +213,38 @@ class RpmBuilder(DistroBuilder):
         self.parent = f"{self.name}-{self.release}-Package-{module_name}"
         if self.process_package(module_name):
             self.analyze(self.get("Name"), self.get("Depends"))
+
+    def process_system(self):
+        distro_root = self.name.lower().replace("_", "-")
+        self.sbom_package.initialise()
+        self.sbom_package.set_name(distro_root)
+        self.sbom_package.set_version(self.release)
+        self.sbom_package.set_type("operating-system")
+        self.sbom_package.set_filesanalysis(False)
+        license = "NOASSERTION"
+        self.sbom_package.set_licensedeclared(license)
+        self.sbom_package.set_licenseconcluded(license)
+        self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
+        # Store package data
+        self.sbom_packages[
+            (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
+        ] = self.sbom_package.get_package()
+        self.sbom_relationship.initialise()
+        self.sbom_relationship.set_relationship(
+            self.parent, "DESCRIBES", distro_root
+        )
+        self.sbom_relationships.append(self.sbom_relationship.get_relationship())
+        # Get installed packages
+        out = self.run_program(f"rpm -qa")
+        for line in out:
+            # Parse line PRODUCT-VERSION[-Other]?. If pattern not followed ignore...
+            item = os.path.splitext(os.path.basename(line.strip().rstrip("\n")))[0].lower()
+            # Version assumed to start with digit.
+            product_version = re.search(r"-\d[.\d]*[a-z0-9]*", item)
+            if product_version is None:
+                continue
+            module_name = item[: product_version.start()].lower().replace("_", "-")
+            if self.debug:
+                print (f"Processing... {module_name}")
+            if self.process_package(module_name, distro_root):
+                self.analyze(self.get("Name"), self.get("Depends"))

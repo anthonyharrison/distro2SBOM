@@ -26,8 +26,10 @@ up for testing using different versions of Python.
 ## Usage
 
 ```
-usage: distro2sbom [-h] [--distro {rpm,deb,windows,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-d] [--sbom {spdx,cyclonedx}] [--format {tag,json,yaml}] [-o OUTPUT_FILE]
-                   [-V]
+usage: distro2sbom [-h] [--distro {rpm,deb,windows,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-s] [-d] [--sbom {spdx,cyclonedx}] [--format {tag,json,yaml}]
+                   [-o OUTPUT_FILE] [-V]
+
+Distro2Sbom generates a Software Bill of Materials for the specified package or distribution.
 
 options:
   -h, --help            show this help message and exit
@@ -43,6 +45,9 @@ Input:
                         release identity of distribution
   -p PACKAGE, --package PACKAGE
                         identity of package within distribution
+  -s, --system          generate SBOM for installed system
+
+Output:
 
 Output:
   -d, --debug           add debug information
@@ -117,7 +122,10 @@ If the specified filename is not found, the tool will terminate.
 The `--package` option is used to identify the name of a package or application installed on the system. If the specified package or application is not found, the tool terminates.
 This option is not supported if the `--distro` option is set to 'windows'.
 
-At least one of the `--input-file` or `--package` options must be specified. If both options are specified, the `--input-file` option is assumed.
+The `--system` option is used to generate an SBOM for all the applications installed on the system. Note that this option will take some time to complete as it is dependent on the number of installed applications.
+This option is not supported if the `--distro` option is set to 'windows'.
+
+At least one of the `--input-file`, `--package` or `--system` options must be specified. If multiple options are specified, the `--input-file` option followed by the `--system` option will be assumed.
 
 The `--sbom` option is used to specify the format of the generated SBOM (the default is SPDX). The `--format` option
 can be used to specify the formatting of the SBOM (the default is Tag Value format for a SPDX SBOM). JSON format is supported for both
@@ -148,6 +156,16 @@ distro2sbom --distro deb --name <distro name> --release <distro release> --input
 
 This will generate an SBOM in CycloneDX JSON value for a distribution file in dpkg format (indicated by the 'deb' option)
 
+### SBOM for System
+
+To generate an SBOM for an installed system.
+
+```bash
+distro2sbom --distro rpm --name <distro name> --release <distro release> --system --format json --output-file <distrooutfile>
+```
+
+This will generate an SBOM in SPDX JSON value for a distribution file in dpkg format (indicated by the 'deb' option)
+
 ## Licence
 
 Licenced under the Apache 2.0 Licence.
@@ -158,7 +176,10 @@ This tool is meant to support software development and security audit functions.
 which is provided to the tool. Unfortunately, the tool is unable to determine the validity or completeness of such a SBOM file; users of the tool
 are therefore reminded that they should assert the quality of any data which is provided to the tool.
 
-Dependencies between applications are only produced for the `--package` option.
+When processing and validating licenses, the application will use a set of synonyms to attempt to map some license identifiers to the correct [SPDX License Identifiers](https://spdx.org/licenses/). However, the
+user of the tool is reminded that they should assert the quality of any data which is provided by the tool particularly where the license identifier has been modified.
+
+Dependencies between applications are only produced for the `--package` and `--system` options.
 
 The `--package` option is not supported if the `--distro` option is set to 'windows'.
 

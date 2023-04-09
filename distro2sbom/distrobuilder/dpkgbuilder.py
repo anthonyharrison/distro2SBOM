@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
+from pathlib import Path
 
 from lib4sbom.data.package import SBOMPackage
 from lib4sbom.data.relationship import SBOMRelationship
+from lib4sbom.license import LicenseScanner
 
 from distro2sbom.distrobuilder.distrobuilder import DistroBuilder
 
@@ -14,6 +16,7 @@ class DpkgBuilder(DistroBuilder):
         super().__init__(debug)
         self.sbom_package = SBOMPackage()
         self.sbom_relationship = SBOMRelationship()
+        self.license = LicenseScanner()
         self.distro_packages = []
         self.name = name.replace(" ", "-")
         self.release = release
@@ -33,6 +36,7 @@ class DpkgBuilder(DistroBuilder):
             self.sbom_package.set_filesanalysis(False)
             license = "NOASSERTION"
             self.sbom_package.set_licensedeclared(license)
+            self.sbom_package.set_licenseconcluded(license)
             self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
             # Store package data
             self.sbom_packages[
@@ -58,6 +62,7 @@ class DpkgBuilder(DistroBuilder):
                     self.sbom_package.set_filesanalysis(False)
                     license = "NOASSERTION"
                     self.sbom_package.set_licensedeclared(license)
+                    self.sbom_package.set_licenseconcluded(license)
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     description = " ".join(n for n in line_element[3:])
                     self.sbom_package.set_summary(description)
@@ -80,6 +85,42 @@ class DpkgBuilder(DistroBuilder):
         if attribute in self.metadata:
             return self.metadata[attribute].lstrip()
         return ""
+
+    def get_metadata_from_file(self, package):
+        # Location of Debian copyright files
+        base_file = f"/usr/share/doc/{package}/copyright"
+        copyright_text = ""
+        license_text = "NOASSERTION"
+        filename = Path(base_file)
+        # Check path exists and is a valid file
+        if filename.exists() and filename.is_file():
+            with open(filename, "r") as f:
+                lines = f.readlines()
+                copyright_found = False
+                license_found = False
+                for line in lines:
+                    # Search for first Copyright and License statements
+                    if copyright_found:
+                        copyright_info = line.strip().rstrip("\n")
+                        if len(copyright_info) > 0:
+                            copyright_text = "Copyright: " + copyright_info
+                            copyright_found = False
+                    elif line.startswith("Copyright:") and len(copyright_text) == 0:
+                        copyright_text = line.strip().rstrip("\n")
+                        if len(copyright_text) <= len("Copyright:"):
+                            # Assume copyright is on a following line
+                            copyright_found = True
+                    elif line.startswith("License:") and not license_found:
+                        license_info = (
+                            line.split("License:", 1)[1]
+                            .strip()
+                            .rstrip("\n")
+                        )
+                        if len (license_info) > 0:
+                            license_text = license_info
+                            license_found = True
+
+        return license_text, copyright_text
 
     def process_package(self, package_name, parent="-"):
         if self.debug:
@@ -110,9 +151,19 @@ class DpkgBuilder(DistroBuilder):
             self.sbom_package.set_name(package)
             self.sbom_package.set_version(version)
             self.sbom_package.set_filesanalysis(False)
-            license = "NOASSERTION"
+            license_text, copyright = self.get_metadata_from_file(package_name)
+            license =  self.license.find_license(license_text)
             self.sbom_package.set_licensedeclared(license)
             self.sbom_package.set_licenseconcluded(license)
+            if license != "NOASSERTION":
+                license_comment = "This information was automatically extracted from the package."
+                if license_text != "NOASSERTION" and license != license_text:
+                    self.sbom_package.set_licensedeclared("NOASSERTION")
+                    license_comment = f"{license_comment} {self.sbom_package.get_name()} declares {license_text} which is not a valid SPDX License identifier or expression."
+                self.sbom_package.set_licensecomments(license_comment)
+            elif license_text != "NOASSERTION":
+                license_comment = f"{self.sbom_package.get_name()} declares {license_text} which is not a valid SPDX License identifier or expression."
+                self.sbom_package.set_licensecomments(license_comment)
             supplier = self.get("Maintainer")
             if len(supplier.split()) > 3:
                 self.sbom_package.set_supplier(
@@ -126,6 +177,13 @@ class DpkgBuilder(DistroBuilder):
                 self.sbom_package.set_summary(self.get("Description"))
             if self.get("Homepage") != "":
                 self.sbom_package.set_homepage(self.get("Homepage"))
+            # Add copyright information
+            if len(copyright) > 0:
+                self.sbom_package.set_copyrighttext(copyright)
+            # External references
+            self.sbom_package.set_externalreference(
+                "PACKAGE-MANAGER", "purl", f"pkg:deb/{package}@{version}"
+            )
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
@@ -159,3 +217,38 @@ class DpkgBuilder(DistroBuilder):
         self.parent = f"{self.name}-{self.release}-Package-{module_name}"
         if self.process_package(module_name):
             self.analyze(self.get("Package"), self.get("Depends"))
+
+    def process_system(self):
+        distro_root = self.name.lower().replace("_", "-")
+        self.sbom_package.initialise()
+        self.sbom_package.set_name(distro_root)
+        self.sbom_package.set_version(self.release)
+        self.sbom_package.set_type("operating-system")
+        self.sbom_package.set_filesanalysis(False)
+        license = "NOASSERTION"
+        self.sbom_package.set_licensedeclared(license)
+        self.sbom_package.set_licenseconcluded(license)
+        self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
+        # Store package data
+        self.sbom_packages[
+            (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
+        ] = self.sbom_package.get_package()
+        self.sbom_relationship.initialise()
+        self.sbom_relationship.set_relationship(
+            self.parent, "DESCRIBES", distro_root
+        )
+        self.sbom_relationships.append(self.sbom_relationship.get_relationship())
+        # Get installed packages
+        out = self.run_program(f"dpkg -l")
+        for line in out:
+            if line[:2] == "ii":
+                # For each installed package
+                line_element = re.sub(
+                    " +", " ", line[2:].strip().rstrip("\n")
+                ).split(" ")
+                module_name = line_element[0]
+                if self.debug:
+                    print (f"Processing... {module_name}")
+                if self.process_package(module_name, distro_root):
+                    self.analyze(self.get("Package"), self.get("Depends"))
+

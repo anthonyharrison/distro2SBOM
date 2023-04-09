@@ -18,6 +18,9 @@ class DistroBuilder:
     def parse_data(self):
         pass
 
+    def process_system(self):
+        print("[ERROR] Feature not available")
+
     def run_program(self, command_line):
         # Remove any null bytes
         command_line = command_line.replace("\x00", "")
