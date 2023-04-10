@@ -111,12 +111,8 @@ class DpkgBuilder(DistroBuilder):
                             # Assume copyright is on a following line
                             copyright_found = True
                     elif line.startswith("License:") and not license_found:
-                        license_info = (
-                            line.split("License:", 1)[1]
-                            .strip()
-                            .rstrip("\n")
-                        )
-                        if len (license_info) > 0:
+                        license_info = line.split("License:", 1)[1].strip().rstrip("\n")
+                        if len(license_info) > 0:
                             license_text = license_info
                             license_found = True
 
@@ -152,11 +148,13 @@ class DpkgBuilder(DistroBuilder):
             self.sbom_package.set_version(version)
             self.sbom_package.set_filesanalysis(False)
             license_text, copyright = self.get_metadata_from_file(package_name)
-            license =  self.license.find_license(license_text)
+            license = self.license.find_license(license_text)
             self.sbom_package.set_licensedeclared(license)
             self.sbom_package.set_licenseconcluded(license)
             if license != "NOASSERTION":
-                license_comment = "This information was automatically extracted from the package."
+                license_comment = (
+                    "This information was automatically extracted from the package."
+                )
                 if license_text != "NOASSERTION" and license != license_text:
                     self.sbom_package.set_licensedeclared("NOASSERTION")
                     license_comment = f"{license_comment} {self.sbom_package.get_name()} declares {license_text} which is not a valid SPDX License identifier or expression."
@@ -234,21 +232,18 @@ class DpkgBuilder(DistroBuilder):
             (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
         ] = self.sbom_package.get_package()
         self.sbom_relationship.initialise()
-        self.sbom_relationship.set_relationship(
-            self.parent, "DESCRIBES", distro_root
-        )
+        self.sbom_relationship.set_relationship(self.parent, "DESCRIBES", distro_root)
         self.sbom_relationships.append(self.sbom_relationship.get_relationship())
         # Get installed packages
         out = self.run_program(f"dpkg -l")
         for line in out:
             if line[:2] == "ii":
                 # For each installed package
-                line_element = re.sub(
-                    " +", " ", line[2:].strip().rstrip("\n")
-                ).split(" ")
+                line_element = re.sub(" +", " ", line[2:].strip().rstrip("\n")).split(
+                    " "
+                )
                 module_name = line_element[0]
                 if self.debug:
-                    print (f"Processing... {module_name}")
+                    print(f"Processing... {module_name}")
                 if self.process_package(module_name, distro_root):
                     self.analyze(self.get("Package"), self.get("Depends"))
-

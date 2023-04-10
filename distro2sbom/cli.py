@@ -42,6 +42,7 @@ def inpath(binary):
         )
     )
 
+
 def main(argv=None):
 
     argv = argv or sys.argv
@@ -138,7 +139,7 @@ def main(argv=None):
         "name": "",
         "release": "",
         "package": "",
-        "system" : False,
+        "system": False,
     }
 
     raw_args = parser.parse_args(argv[1:])
@@ -215,7 +216,7 @@ def main(argv=None):
             return -1
     elif args["system"]:
         if args["debug"]:
-            print ("This may take some time...")
+            print("This may take some time...")
         sbom_build.process_system()
     else:
         sbom_build.process_distro_package(args["package"])

@@ -187,9 +187,7 @@ class RpmBuilder(DistroBuilder):
             # Add relationship
             self.sbom_relationship.initialise()
             if parent != "-":
-                self.sbom_relationship.set_relationship(
-                    parent, "DEPENDS_ON", package
-                )
+                self.sbom_relationship.set_relationship(parent, "DEPENDS_ON", package)
             else:
                 self.sbom_relationship.set_relationship(
                     self.parent, "DESCRIBES", package
@@ -230,21 +228,21 @@ class RpmBuilder(DistroBuilder):
             (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
         ] = self.sbom_package.get_package()
         self.sbom_relationship.initialise()
-        self.sbom_relationship.set_relationship(
-            self.parent, "DESCRIBES", distro_root
-        )
+        self.sbom_relationship.set_relationship(self.parent, "DESCRIBES", distro_root)
         self.sbom_relationships.append(self.sbom_relationship.get_relationship())
         # Get installed packages
         out = self.run_program(f"rpm -qa")
         for line in out:
             # Parse line PRODUCT-VERSION[-Other]?. If pattern not followed ignore...
-            item = os.path.splitext(os.path.basename(line.strip().rstrip("\n")))[0].lower()
+            item = os.path.splitext(os.path.basename(line.strip().rstrip("\n")))[
+                0
+            ].lower()
             # Version assumed to start with digit.
             product_version = re.search(r"-\d[.\d]*[a-z0-9]*", item)
             if product_version is None:
                 continue
             module_name = item[: product_version.start()].lower().replace("_", "-")
             if self.debug:
-                print (f"Processing... {module_name}")
+                print(f"Processing... {module_name}")
             if self.process_package(module_name, distro_root):
                 self.analyze(self.get("Name"), self.get("Depends"))
