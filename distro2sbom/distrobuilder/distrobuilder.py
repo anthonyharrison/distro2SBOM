@@ -37,8 +37,12 @@ class DistroBuilder:
             .encode("ascii", "ignore")
             .decode("utf-8")
         )
-        # Get names
-        names = re.findall(r"[a-zA-Z\.\]+ [A-Za-z]+ ", name_str)
+        if " " in name_str:
+            # Get names assumed to be at least two names <first> <surname>
+            names = re.findall(r"[a-zA-Z\.\]+ [A-Za-z]+ ", name_str)
+        else:
+            # Handle case where only single name provided
+            names = [name_str]
         # Get email addresses
         # Use RFC-5322 compliant regex (https://regex101.com/library/6EL6YF)
         emails = re.findall(
