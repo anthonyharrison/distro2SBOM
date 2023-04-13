@@ -161,7 +161,7 @@ class RpmBuilder(DistroBuilder):
             # Add comment if metadata license was modified
             if len(self.get("License")) > 0 and license != self.get("License"):
                 self.sbom_package.set_licensecomments(
-                    f"{self.get('Name')} declares {self.get('License')} which is not a valid SPDX License identifier or expression."
+                    f"{self.get('Name')} declares {self.get('License')} which is not currently a valid SPDX License identifier or expression."
                 )
             supplier = self.get("Packager")
             if len(supplier.split()) > 3:
