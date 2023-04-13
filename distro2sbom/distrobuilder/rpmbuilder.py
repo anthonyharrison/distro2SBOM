@@ -147,6 +147,8 @@ class RpmBuilder(DistroBuilder):
             self.sbom_package.initialise()
             package = self.get("Name")
             version = self.get("Version")
+            if parent == "-":
+                self.sbom_package.set_type("application")
             self.sbom_package.set_name(package)
             self.sbom_package.set_version(version)
             self.sbom_package.set_filesanalysis(False)

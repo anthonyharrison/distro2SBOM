@@ -146,6 +146,8 @@ class DpkgBuilder(DistroBuilder):
             version = self.get("Version")
             self.sbom_package.set_name(package)
             self.sbom_package.set_version(version)
+            if parent == "-":
+                self.sbom_package.set_type("application")
             self.sbom_package.set_filesanalysis(False)
             license_text, copyright = self.get_metadata_from_file(package_name)
             license = self.license.find_license(license_text)
