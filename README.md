@@ -183,6 +183,9 @@ Dependencies between applications are only produced for the `--package` and `--s
 
 The `--package` option is not supported if the `--distro` option is set to 'windows'.
 
+Whilst [PURL](https://github.com/package-url/purl-spec) and [CPE](https://nvd.nist.gov/products/cpe) references are automatically generated for components, the accuracy
+of such references cannot be guaranteed as they are dependent on the validity of the data associated with the component.
+
 ## Feedback and Contributions
 
 Bugs and feature requests can be made via GitHub Issues.
