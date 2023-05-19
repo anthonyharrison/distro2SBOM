@@ -3,9 +3,9 @@
 # check https://nfpm.goreleaser.com/configuration for detailed usage
 #
 name: "distro2sbom"
-arch: "amd64"
+arch: "$ARCH"
 platform: "linux"
-version: "v1.0.0"
+version: "$VERSION"
 section: "default"
 priority: "extra"
 provides:
