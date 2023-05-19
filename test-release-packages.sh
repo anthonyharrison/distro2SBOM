@@ -31,7 +31,7 @@ do
         "$IMAGE" \
         sh -c  "apt-get update && apt-get install -y gpg curl /package/*.deb && \
                 curl -sSfL https://raw.githubusercontent.com/fluent/fluent-bit/master/install.sh|sh &&
-                #distro2sbom -p fluent-bit --distro rpm --name ${SBOM_NAME} --release ${SBOM_RELEASE} --sbom cyclonedx --output-file /output/${IMAGE/:/_}.json"
+                echo distro2sbom -p fluent-bit --distro rpm --name ${SBOM_NAME} --release ${SBOM_RELEASE} --sbom cyclonedx --output-file /output/${IMAGE/:/_}.json"
 done
 
 for IMAGE in "${YUM_TARGETS[@]}"
@@ -46,5 +46,5 @@ do
         "$IMAGE" \
         sh -c  "yum install -y /package/*.rpm && \
                 curl -sSfL https://raw.githubusercontent.com/fluent/fluent-bit/master/install.sh|sh && \
-                #distro2sbom -p fluent-bit --distro rpm --name ${SBOM_NAME} --release ${SBOM_RELEASE} --sbom cyclonedx --output-file /output/${IMAGE/:/_}.json"
+                echo distro2sbom -p fluent-bit --distro rpm --name ${SBOM_NAME} --release ${SBOM_RELEASE} --sbom cyclonedx --output-file /output/${IMAGE/:/_}.json"
 done
