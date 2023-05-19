@@ -14,10 +14,8 @@ depends:
 - python3
 - python3-pip
 - curl
-maintainer: "Patrick Stephens <pat@calyptia.com>"
-description: |
-  FooBar is the great foo and bar software.
-    And this can be in multiple lines!
+maintainer: "Anthony Harrison <https://github.com/anthonyharrison>"
+description: Generates SBOM files from system packaging information
 vendor: "Calyptia"
 homepage: "http://calyptia.com"
 license: "Apache 2.0"
