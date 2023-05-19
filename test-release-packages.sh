@@ -30,8 +30,9 @@ do
         -v "$SCRIPT_DIR/output/":/output/:rw \
         "$IMAGE" \
         sh -c  "apt-get update && apt-get install -y gpg curl /package/*.deb && \
+                distro2sbom --help && \
                 curl -sSfL https://raw.githubusercontent.com/fluent/fluent-bit/master/install.sh|sh &&
-                echo distro2sbom -p fluent-bit --distro rpm --name ${SBOM_NAME} --release ${SBOM_RELEASE} --sbom cyclonedx --output-file /output/${IMAGE/:/_}.json"
+                echo distro2sbom -p fluent-bit --distro rpm --name ${SBOM_NAME} --release ${SBOM_RELEASE} --sbom cyclonedx --format json --output-file /output/${IMAGE/:/_}.json"
 done
 
 for IMAGE in "${YUM_TARGETS[@]}"
@@ -45,6 +46,9 @@ do
         -v "$SCRIPT_DIR/output/":/output/:rw \
         "$IMAGE" \
         sh -c  "yum install -y /package/*.rpm && \
+                distro2sbom --help && \
                 curl -sSfL https://raw.githubusercontent.com/fluent/fluent-bit/master/install.sh|sh && \
-                echo distro2sbom -p fluent-bit --distro rpm --name ${SBOM_NAME} --release ${SBOM_RELEASE} --sbom cyclonedx --output-file /output/${IMAGE/:/_}.json"
+                echo distro2sbom -p fluent-bit --distro rpm --name ${SBOM_NAME} --release ${SBOM_RELEASE} --sbom cyclonedx --format json --output-file /output/${IMAGE/:/_}.json"
 done
+
+# TODO: consume output with Grype to generate CVEs
