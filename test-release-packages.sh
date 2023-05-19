@@ -15,8 +15,9 @@ APT_TARGETS=("ubuntu:20.04"
     "debian:10"
     "debian:11")
 
-YUM_TARGETS=("rockylinux:8"
-    "quay.io/centos/centos:stream9"
+# https://github.com/anthonyharrison/distro2SBOM/issues/4
+YUM_TARGETS=("quay.io/centos/centos:stream9"
+    "amazonlinux:2"
     "amazonlinux:2023")
 
 for IMAGE in "${APT_TARGETS[@]}"
