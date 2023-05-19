@@ -1,0 +1,29 @@
+# nfpm example configuration file
+#
+# check https://nfpm.goreleaser.com/configuration for detailed usage
+#
+name: "distro2sbom"
+arch: "amd64"
+platform: "linux"
+version: "v1.0.0"
+section: "default"
+priority: "extra"
+provides:
+- distro2sbom
+depends:
+- python3
+- python3-pip
+- curl
+maintainer: "Patrick Stephens <pat@calyptia.com>"
+description: |
+  FooBar is the great foo and bar software.
+    And this can be in multiple lines!
+vendor: "Calyptia"
+homepage: "http://calyptia.com"
+license: "Apache 2.0"
+contents:
+- src: ../requirements.txt
+  dst: /opt/distro2sbom/requirements.txt
+scripts:
+  postinstall: ./postinstall.sh
+  preremove:   ./preremove.sh
