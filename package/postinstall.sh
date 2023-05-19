@@ -20,3 +20,11 @@ if ! command -v "$PIP" >/dev/null 2>&1 ; then
 fi
 
 "$PIP" install -U -r /opt/distro2sbom/requirements.txt
+
+# Not install, it requires relative paths to work unfortunately
+oldpath="$PWD"
+cd /opt/distro2sbom/
+
+"$PYTHON" setup.py install
+
+cd "$oldpath"

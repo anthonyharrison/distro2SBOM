@@ -24,6 +24,14 @@ license: "Apache 2.0"
 contents:
 - src: ../requirements.txt
   dst: /opt/distro2sbom/requirements.txt
+- src: ../README.md
+  dst: /opt/distro2sbom/README.md
+- src: ../LICENSE
+  dst: /opt/distro2sbom/LICENSE
+- src: ../setup.py
+  dst: /opt/distro2sbom/setup.py
+- src: ../distro2sbom
+  dst: /opt/distro2sbom/distro2sbom
 scripts:
   postinstall: ./postinstall.sh
   preremove:   ./preremove.sh
