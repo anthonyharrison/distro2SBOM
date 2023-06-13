@@ -18,8 +18,13 @@ class DpkgBuilder(DistroBuilder):
         self.sbom_relationship = SBOMRelationship()
         self.license = LicenseScanner()
         self.distro_packages = []
-        self.name = name.replace(" ", "-")
-        self.release = release
+        if name is None and release is None:
+            self.system_data = self.get_system()
+            self.name = self.system_data["name"].replace(" ", "-")
+            self.release = self.system_data["version_id"]
+        else:
+            self.name = name.replace(" ", "-")
+            self.release = release
         self.parent = f"Distro-{self.name}"
 
     def parse_data(self, filename):
@@ -37,7 +42,10 @@ class DpkgBuilder(DistroBuilder):
             license = "NOASSERTION"
             self.sbom_package.set_licensedeclared(license)
             self.sbom_package.set_licenseconcluded(license)
-            self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
+            if self.system_data.get("id") is not None:
+                self.sbom_package.set_supplier("Organisation", self.system_data.get("id"))
+            else:
+                self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
@@ -237,7 +245,12 @@ class DpkgBuilder(DistroBuilder):
         license = "NOASSERTION"
         self.sbom_package.set_licensedeclared(license)
         self.sbom_package.set_licenseconcluded(license)
-        self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
+        if self.system_data.get("home_url") is not None:
+            self.sbom_package.set_homepage(self.system_data.get("home_url"))
+        if self.system_data.get("id") is not None:
+            self.sbom_package.set_supplier("Organisation", self.system_data.get("id"))
+        else:
+            self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
         # Store package data
         self.sbom_packages[
             (self.sbom_package.get_name(), self.sbom_package.get_value("version"))

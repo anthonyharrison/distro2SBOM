@@ -136,8 +136,8 @@ def main(argv=None):
         "sbom": "spdx",
         "debug": False,
         "format": "tag",
-        "name": "",
-        "release": "",
+        "name": None,
+        "release": None,
         "package": "",
         "system": False,
     }
@@ -151,14 +151,17 @@ def main(argv=None):
     if args["distro"] == "":
         print("[ERROR] distro type must be specified.")
         return -1
-    elif args["name"] == "":
-        print("[ERROR] distro name must be specified.")
-        return -1
-    elif args["release"] == "":
-        print("[ERROR] distro release must be specified.")
-        return -1
+    elif args["name"] is not None and args["release"] is None:
+         print("[ERROR] distro release must be specified.")
+         return -1
+    elif args["name"] is None and args["release"] is not None:
+         print("[ERROR] distro name must be specified.")
+         return -1
     elif args["input_file"] == "" and args["package"] == "" and not args["system"]:
         print("[ERROR] distro file or package name must be specified.")
+        return -1
+    elif args["input_file"] != "" and args["name"] is None and args["release"] is None:
+        print("[ERROR] distro name and release must be specified.")
         return -1
 
     # Ensure format is aligned with type of SBOM

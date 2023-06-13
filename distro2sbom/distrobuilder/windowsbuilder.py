@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
+import platform
 
 from lib4sbom.data.package import SBOMPackage
 from lib4sbom.data.relationship import SBOMRelationship
@@ -15,8 +16,14 @@ class WindowsBuilder(DistroBuilder):
         self.sbom_package = SBOMPackage()
         self.sbom_relationship = SBOMRelationship()
         self.distro_packages = []
-        self.name = name.replace(" ", "-")
-        self.release = release
+        if name is not None:
+            self.name = name.replace(" ", "-")
+        else:
+            self.name = "Windows"
+        if release is not None:
+            self.release = release
+        else:
+            self.release = platform.version()
         self.parent = f"Distro-{self.name}"
 
     def get_data(self):
@@ -38,7 +45,7 @@ class WindowsBuilder(DistroBuilder):
             self.sbom_package.set_filesanalysis(False)
             license = "NOASSERTION"
             self.sbom_package.set_licensedeclared(license)
-            self.sbom_package.set_supplier("Organisaiton", "Microsoft Corporation")
+            self.sbom_package.set_supplier("Organisation", "Microsoft Corporation")
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
@@ -94,4 +101,7 @@ class WindowsBuilder(DistroBuilder):
                     metadata = {}
 
     def process_distro_package(self, module_name):
+        print("[ERROR] Feature not available")
+
+    def get_system(self):
         print("[ERROR] Feature not available")
