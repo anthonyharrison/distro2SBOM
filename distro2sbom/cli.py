@@ -244,7 +244,8 @@ def main(argv=None):
             filename=args["output_file"],
         )
     else:
-        print(f"[ERROR] Unable to locate package {args['package']}")
+        if args['package'] != "":
+            print(f"[ERROR] Unable to locate package {args['package']}")
         return -1
 
     return 0
