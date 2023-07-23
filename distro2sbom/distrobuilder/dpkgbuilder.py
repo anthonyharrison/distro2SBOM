@@ -43,7 +43,9 @@ class DpkgBuilder(DistroBuilder):
             self.sbom_package.set_licensedeclared(license)
             self.sbom_package.set_licenseconcluded(license)
             if self.system_data.get("id") is not None:
-                self.sbom_package.set_supplier("Organisation", self.system_data.get("id"))
+                self.sbom_package.set_supplier(
+                    "Organisation", self.system_data.get("id")
+                )
             else:
                 self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
             # Store package data
@@ -197,9 +199,7 @@ class DpkgBuilder(DistroBuilder):
                 "PACKAGE-MANAGER", "purl", f"pkg:deb/{package}@{version}"
             )
             if len(supplier) > 1:
-                component_supplier = self.format_supplier(
-                    supplier, include_email=False
-                )
+                component_supplier = self.format_supplier(supplier, include_email=False)
                 self.sbom_package.set_externalreference(
                     "SECURITY",
                     "cpe23Type",
@@ -263,7 +263,7 @@ class DpkgBuilder(DistroBuilder):
         self.sbom_relationship.set_relationship(self.parent, "DESCRIBES", distro_root)
         self.sbom_relationships.append(self.sbom_relationship.get_relationship())
         # Get installed packages
-        out = self.run_program(f"dpkg -l")
+        out = self.run_program("dpkg -l")
         for line in out:
             if line[:2] == "ii":
                 # For each installed package

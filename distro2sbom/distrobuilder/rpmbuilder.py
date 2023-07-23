@@ -46,7 +46,9 @@ class RpmBuilder(DistroBuilder):
             self.sbom_package.set_licensedeclared(license)
             self.sbom_package.set_licenseconcluded(license)
             if self.system_data.get("id") is not None:
-                self.sbom_package.set_supplier("Organisation", self.system_data.get("id"))
+                self.sbom_package.set_supplier(
+                    "Organisation", self.system_data.get("id")
+                )
             else:
                 self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
             # Store package data
@@ -170,7 +172,7 @@ class RpmBuilder(DistroBuilder):
             # Report license if valid SPDX identifier
             self.sbom_package.set_licenseconcluded(license)
             # Add comment if metadata license was modified
-            #if len(license_text) > 0 and license != license_text:
+            # if len(license_text) > 0 and license != license_text:
             #    self.sbom_package.set_licensecomments(
             #        f"{self.get('Name')} declares {license_text} which is not currently a valid SPDX License identifier or expression."
             #    )
@@ -207,9 +209,7 @@ class RpmBuilder(DistroBuilder):
                 "PACKAGE-MANAGER", "purl", f"pkg:rpm/{package}@{version}"
             )
             if len(supplier) > 1:
-                component_supplier = self.format_supplier(
-                    supplier, include_email=False
-                )
+                component_supplier = self.format_supplier(supplier, include_email=False)
                 self.sbom_package.set_externalreference(
                     "SECURITY",
                     "cpe23Type",
@@ -271,7 +271,7 @@ class RpmBuilder(DistroBuilder):
         self.sbom_relationship.set_relationship(self.parent, "DESCRIBES", distro_root)
         self.sbom_relationships.append(self.sbom_relationship.get_relationship())
         # Get installed packages
-        out = self.run_program(f"rpm -qa")
+        out = self.run_program("rpm -qa")
         for line in out:
             # Parse line PRODUCT-VERSION[-Other]?. If pattern not followed ignore...
             item = os.path.splitext(os.path.basename(line.strip().rstrip("\n")))[

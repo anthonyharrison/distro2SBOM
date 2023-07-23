@@ -4,7 +4,6 @@
 import re
 import subprocess
 import unicodedata
-
 from pathlib import Path
 
 
@@ -70,7 +69,7 @@ class DistroBuilder:
 
     def get_system(self):
         # Extract metadata from file
-        OS_FILE="/etc/os-release"
+        OS_FILE = "/etc/os-release"
         metadata = {}
         filePath = Path(OS_FILE)
         # Check path exists and is a valid file
@@ -79,5 +78,5 @@ class DistroBuilder:
             lines = os_file.readlines()
             for line in lines:
                 data = line.split("=")
-                metadata[data[0].lower()] = data[1].replace('"','').strip()
+                metadata[data[0].lower()] = data[1].replace('"', "").strip()
         return metadata
