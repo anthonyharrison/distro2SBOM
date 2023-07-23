@@ -160,19 +160,35 @@ class RpmBuilder(DistroBuilder):
             self.sbom_package.set_name(package)
             self.sbom_package.set_version(version)
             self.sbom_package.set_filesanalysis(False)
-            license = self.license.find_license(self.get("License"))
+            license_text = self.get("License")
+            license = self.license.find_license(license_text)
             # Report license as reported by metadata. If not valid SPDX, report NOASSERTION
-            if license != self.get("License"):
+            if license != license_text:
                 self.sbom_package.set_licensedeclared("NOASSERTION")
             else:
                 self.sbom_package.set_licensedeclared(license)
             # Report license if valid SPDX identifier
             self.sbom_package.set_licenseconcluded(license)
             # Add comment if metadata license was modified
-            if len(self.get("License")) > 0 and license != self.get("License"):
-                self.sbom_package.set_licensecomments(
-                    f"{self.get('Name')} declares {self.get('License')} which is not currently a valid SPDX License identifier or expression."
+            #if len(license_text) > 0 and license != license_text:
+            #    self.sbom_package.set_licensecomments(
+            #        f"{self.get('Name')} declares {license_text} which is not currently a valid SPDX License identifier or expression."
+            #    )
+
+            if license != "NOASSERTION":
+                license_comment = (
+                    "This information was automatically extracted from the package."
                 )
+                if license_text != "NOASSERTION" and license != license_text:
+                    license_comment = f"{license_comment} {self.sbom_package.get_name()} declares {license_text} which is not currently a valid SPDX License identifier or expression."
+                if self.license.deprecated(license):
+                    license_comment = f"{license_comment} {license} is now deprecated."
+                self.sbom_package.set_licensecomments(license_comment)
+            elif license_text != "NOASSERTION":
+                license_comment = f"{self.sbom_package.get_name()} declares {license_text} which is not currently a valid SPDX License identifier or expression."
+                if self.license.deprecated(license):
+                    license_comment = f"{license_comment} {license} is now deprecated."
+                self.sbom_package.set_licensecomments(license_comment)
             supplier = self.get("Packager")
             if len(supplier.split()) > 3:
                 self.sbom_package.set_supplier(

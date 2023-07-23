@@ -168,9 +168,13 @@ class DpkgBuilder(DistroBuilder):
                 if license_text != "NOASSERTION" and license != license_text:
                     self.sbom_package.set_licensedeclared("NOASSERTION")
                     license_comment = f"{license_comment} {self.sbom_package.get_name()} declares {license_text} which is not currently a valid SPDX License identifier or expression."
+                if self.license.deprecated(license):
+                    license_comment = f"{license_comment} {license} is now deprecated."
                 self.sbom_package.set_licensecomments(license_comment)
             elif license_text != "NOASSERTION":
                 license_comment = f"{self.sbom_package.get_name()} declares {license_text} which is not currently a valid SPDX License identifier or expression."
+                if self.license.deprecated(license):
+                    license_comment = f"{license_comment} {license} is now deprecated."
                 self.sbom_package.set_licensecomments(license_comment)
             supplier = self.get("Maintainer")
             if len(supplier.split()) > 3:
