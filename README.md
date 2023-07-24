@@ -162,7 +162,7 @@ This will generate an SBOM in CycloneDX JSON value for a distribution file in dp
 To generate an SBOM for an installed system, obtaining the name and release of the system from installed system files.
 
 ```bash
-distro2sbom --distro rpm --system --format json --output-file <distrooutfile>
+distro2sbom --distro deb --system --format json --output-file <distrooutfile>
 ```
 
 This will generate an SBOM in SPDX JSON value for a distribution file in dpkg format (indicated by the 'deb' option)
