@@ -60,9 +60,9 @@ def main(argv=None):
     input_group.add_argument(
         "--distro",
         action="store",
-        default="",
+        default="auto",
         choices=["rpm", "deb", "windows", "auto"],
-        help="type of distribution",
+        help="type of distribution (default: auto)",
     )
     input_group.add_argument(
         "-i",
@@ -130,7 +130,7 @@ def main(argv=None):
     parser.add_argument("-V", "--version", action="version", version=VERSION)
 
     defaults = {
-        "distro": "",
+        "distro": "auto",
         "input_file": "",
         "output_file": "",
         "sbom": "spdx",

@@ -37,7 +37,7 @@ options:
 
 Input:
   --distro {rpm,deb,windows,auto}
-                        type of distribution
+                        type of distribution (default: auto)
   -i INPUT_FILE, --input-file INPUT_FILE
                         name of distribution file
   -n NAME, --name NAME  name of distribution
@@ -61,8 +61,8 @@ Output:
 						
 ## Operation
 
-The `--distro` option is used to identify the type of distribution. The auto option attempts to determine the type of distribution by searching for the
-presence of key applications required by the tool. If none of the required applications are found, the tool terminates. This option is mandatory.
+The `--distro` option is used to identify the type of distribution. The default option is auto which attempts to determine the type of distribution by searching for the
+presence of key applications required by the tool. If none of the required applications are found, the tool terminates.
 
 The `--name` option and `--release` option is used to identify the name and release of the distribution. These options are
 optional but if they are specified, values for both options are required. If they are not specified, values for these options shall be obtained from system files installed on the system.
