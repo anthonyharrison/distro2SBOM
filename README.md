@@ -64,8 +64,8 @@ Output:
 The `--distro` option is used to identify the type of distribution. The auto option attempts to determine the type of distribution by searching for the
 presence of key applications required by the tool. If none of the required applications are found, the tool terminates. This option is mandatory.
 
-The `--name` option and `--release` option is used to identify the name and release of the distribution. These options are mandatory if the `--input-file` option is specified otherwise
-they are optional but if they are specified, values for both options are required. If they are not specified, values for these options shall be obtained from system files installed on the system.
+The `--name` option and `--release` option is used to identify the name and release of the distribution. These options are
+optional but if they are specified, values for both options are required. If they are not specified, values for these options shall be obtained from system files installed on the system.
 
 The `--input-file` option is used to provide a filename containing the list of packages installed on the system. The format of the file is dependent on the specified `--distro` option.
 
