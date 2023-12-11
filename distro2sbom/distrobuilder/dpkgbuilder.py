@@ -18,8 +18,8 @@ class DpkgBuilder(DistroBuilder):
         self.sbom_relationship = SBOMRelationship()
         self.license = LicenseScanner()
         self.distro_packages = []
+        self.system_data = self.get_system()
         if name is None and release is None:
-            self.system_data = self.get_system()
             self.name = self.system_data["name"].replace(" ", "-")
             self.release = self.system_data["version_id"]
         else:
