@@ -210,10 +210,11 @@ class RpmBuilder(DistroBuilder):
             )
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
+                cpe_version = version.replace(':','\\:')
                 self.sbom_package.set_externalreference(
                     "SECURITY",
                     "cpe23Type",
-                    f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{version}:*:*:*:*:*:*:*",
+                    f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*",
                 )
             # Store package data
             self.sbom_packages[
