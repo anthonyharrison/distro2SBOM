@@ -1,0 +1,36 @@
+# nfpm example configuration file
+#
+# check https://nfpm.goreleaser.com/configuration for detailed usage
+#
+name: "distro2sbom"
+arch: "$ARCH"
+platform: "linux"
+version: "$VERSION"
+section: "default"
+priority: "extra"
+provides:
+- distro2sbom
+depends:
+- python3
+- python3-pip
+- python3-setuptools
+- curl
+maintainer: "Anthony Harrison <https://github.com/anthonyharrison>"
+description: Generates SBOM files from system packaging information
+vendor: "Calyptia"
+homepage: "http://calyptia.com"
+license: "Apache 2.0"
+contents:
+- src: ../requirements.txt
+  dst: /opt/distro2sbom/requirements.txt
+- src: ../README.md
+  dst: /opt/distro2sbom/README.md
+- src: ../LICENSE
+  dst: /opt/distro2sbom/LICENSE
+- src: ../setup.py
+  dst: /opt/distro2sbom/setup.py
+- src: ../distro2sbom
+  dst: /opt/distro2sbom/distro2sbom
+scripts:
+  postinstall: ./postinstall.sh
+  preremove:   ./preremove.sh
