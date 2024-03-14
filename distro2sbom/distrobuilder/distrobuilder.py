@@ -77,6 +77,7 @@ class DistroBuilder:
             os_file = open(OS_FILE)
             lines = os_file.readlines()
             for line in lines:
-                data = line.split("=")
-                metadata[data[0].lower()] = data[1].replace('"', "").strip()
+                if len(line.strip()) > 0:
+                    data = line.split("=")
+                    metadata[data[0].lower()] = data[1].replace('"', "").strip()
         return metadata
