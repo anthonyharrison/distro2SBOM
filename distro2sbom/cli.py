@@ -95,6 +95,11 @@ def main(argv=None):
         default=False,
         help="generate SBOM for installed system",
     )
+    input_group.add_argument(
+        "--root",
+        action="store",
+        help="location of distribution packages",
+    )
 
     output_group = parser.add_argument_group("Output")
     output_group.add_argument(
@@ -140,6 +145,7 @@ def main(argv=None):
         "release": None,
         "package": "",
         "system": False,
+        "root" : ""
     }
 
     raw_args = parser.parse_args(argv[1:])
@@ -172,6 +178,7 @@ def main(argv=None):
         print("Input file:", args["input_file"])
         print("Distro name:", args["name"])
         print("Distro release:", args["release"])
+        print("Distro root:", args["root"])
         print("Package:", args["package"])
         print("System SBOM:", args["system"])
         print("SBOM type:", args["sbom"])
@@ -198,7 +205,7 @@ def main(argv=None):
             return -1
 
     if distro_type == "deb":
-        sbom_build = DpkgBuilder(args["name"], args["release"], args["debug"])
+        sbom_build = DpkgBuilder(args["name"], args["release"], args["debug"], root=args["root"])
     elif distro_type == "rpm":
         sbom_build = RpmBuilder(args["name"], args["release"], args["debug"])
     elif distro_type == "windows":

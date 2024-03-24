@@ -26,8 +26,8 @@ up for testing using different versions of Python.
 ## Usage
 
 ```
-usage: distro2sbom [-h] [--distro {rpm,deb,windows,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-s] [-d] [--sbom {spdx,cyclonedx}] [--format {tag,json,yaml}]
-                   [-o OUTPUT_FILE] [-V]
+usage: distro2sbom [-h] [--distro {rpm,deb,windows,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-s] [--root ROOT] 
+                   [-d] [--sbom {spdx,cyclonedx}] [--format {tag,json,yaml}] [-o OUTPUT_FILE] [-V]
 
 Distro2Sbom generates a Software Bill of Materials for the specified package or distribution.
 
@@ -46,8 +46,7 @@ Input:
   -p PACKAGE, --package PACKAGE
                         identity of package within distribution
   -s, --system          generate SBOM for installed system
-
-Output:
+  --root ROOT           location of distribution packages
 
 Output:
   -d, --debug           add debug information
@@ -57,6 +56,7 @@ Output:
                         specify format of software bill of materials (sbom) (default: tag)
   -o OUTPUT_FILE, --output-file OUTPUT_FILE
                         output filename (default: output to stdout)
+
 ```
 						
 ## Operation
@@ -125,6 +125,8 @@ This option is not supported if the `--distro` option is set to 'windows'.
 
 The `--system` option is used to generate an SBOM for all the applications installed on the system. Note that this option will take some time to complete as it is dependent on the number of installed applications.
 This option is not supported if the `--distro` option is set to 'windows'.
+
+The `--root` option is used to specify an alternative directory location for the installed packages. This option only applies for 'deb' distributions.
 
 At least one of the `--input-file`, `--package` or `--system` options must be specified. If multiple options are specified, the `--input-file` option followed by the `--system` option will be assumed.
 

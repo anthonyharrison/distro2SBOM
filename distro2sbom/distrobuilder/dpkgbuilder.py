@@ -12,7 +12,7 @@ from distro2sbom.distrobuilder.distrobuilder import DistroBuilder
 
 
 class DpkgBuilder(DistroBuilder):
-    def __init__(self, name, release, debug=False):
+    def __init__(self, name, release, debug=False, root=""):
         super().__init__(debug)
         self.sbom_package = SBOMPackage()
         self.sbom_relationship = SBOMRelationship()
@@ -26,6 +26,7 @@ class DpkgBuilder(DistroBuilder):
             self.name = name.replace(" ", "-")
             self.release = release
         self.parent = f"Distro-{self.name}"
+        self.root=root
 
     def parse_data(self, filename):
         # Process file containing installed applications
@@ -128,6 +129,11 @@ class DpkgBuilder(DistroBuilder):
 
         return license_text, copyright_text
 
+    def dpkg_command(self, command_string):
+        command = f"dpkg"
+        if self.root != "":
+            command=f"{command} --root {self.root}"
+        return self.run_program(f"{command} {command_string}")
     def process_package(self, package_name, parent="-"):
         if self.debug:
             print(f"Process package {package_name}. Parent {parent}")
@@ -140,7 +146,7 @@ class DpkgBuilder(DistroBuilder):
             self.sbom_relationships.append(self.sbom_relationship.get_relationship())
             return 0
         self.distro_packages.append(package_name)
-        out = self.run_program(f"dpkg -s {package_name}")
+        out = self.dpkg_command(f"-s {package_name}")
         # If package not found, no metadata returned
         if len(out) > 0:
             self.metadata = {}
@@ -154,6 +160,8 @@ class DpkgBuilder(DistroBuilder):
             self.sbom_package.initialise()
             package = self.get("Package").lower().replace("_", "-")
             version = self.get("Version")
+            if len(package) == 0:
+                print(f"error with {package_name} processing")
             self.sbom_package.set_name(package)
             self.sbom_package.set_version(version)
             if parent == "-":
@@ -264,7 +272,7 @@ class DpkgBuilder(DistroBuilder):
         self.sbom_relationship.set_relationship(self.parent, "DESCRIBES", distro_root)
         self.sbom_relationships.append(self.sbom_relationship.get_relationship())
         # Get installed packages
-        out = self.run_program("dpkg -l")
+        out = self.dpkg_command("-l")
         for line in out:
             if line[:2] == "ii":
                 # For each installed package
