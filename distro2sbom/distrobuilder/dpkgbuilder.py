@@ -202,18 +202,11 @@ class DpkgBuilder(DistroBuilder):
             # Add copyright information
             if len(copyright) > 0:
                 self.sbom_package.set_copyrighttext(copyright)
-            # External references
-            self.sbom_package.set_externalreference(
-                "PACKAGE-MANAGER", "purl", f"pkg:deb/{package}@{version}"
-            )
+            self.sbom_package.set_purl(f"pkg:deb/{package}@{version}")
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
                 cpe_version = version.replace(':','\\:')
-                self.sbom_package.set_externalreference(
-                    "SECURITY",
-                    "cpe23Type",
-                    f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*",
-                )
+                self.sbom_package.set_cpe(f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*")
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
