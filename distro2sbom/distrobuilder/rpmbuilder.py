@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Anthony Harrison
+# Copyright (C) 2024 Anthony Harrison
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -207,17 +207,11 @@ class RpmBuilder(DistroBuilder):
             if self.get("URL") != "":
                 self.sbom_package.set_homepage(self.get("URL"))
             # External references
-            self.sbom_package.set_externalreference(
-                "PACKAGE-MANAGER", "purl", f"pkg:rpm/{package}@{version}"
-            )
+            self.sbom_package.set_purl(f"pkg:rpm/{package}@{version}")
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
                 cpe_version = version.replace(':','\\:')
-                self.sbom_package.set_externalreference(
-                    "SECURITY",
-                    "cpe23Type",
-                    f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*",
-                )
+                self.sbom_package.set_cpe(f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*")
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
