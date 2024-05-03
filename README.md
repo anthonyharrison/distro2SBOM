@@ -169,6 +169,23 @@ distro2sbom --distro deb --system --format json --output-file <distrooutfile>
 
 This will generate an SBOM in SPDX JSON value for a distribution file in dpkg format (indicated by the 'deb' option)
 
+#### Specific options for rpm/yum based distro
+
+The following [optional] environment variable are available to customize rpm and yum commands used by the tool. This can be usefull for example to enable/disable some repo or to support *chrooted* environments.
+
+- **DISTRO2SBOM_ROOT_PATH** The path prefix where to get `/etc/os-release`
+- **DISTRO2SBOM_RPM_OPTIONS** Additional options passed to rpm commands (used by `rpm -qa` to list all packages and `rpm -qi <pkg>` to query information on a package)
+- **DISTRO2SBOM_YUM_OPTIONS** Additional options passed to yum commands (used by `yum repoquery --deplist <pkg>` to get dependencies)
+
+```bash
+export DISTRO2SBOM_ROOT_PATH=/path-to-distrib/slash
+export DISTRO2SBOM_RPM_OPTIONS="--root /path-to-distrib/slash"
+export DISTRO2SBOM_YUM_OPTIONS="--installroot=/path-to-distrib/slash --setopt=reposdir=/path-to-distrib/repos --setopt=install_weak_deps=False --repo=my-repo"
+distro2sbom --distro rpm --system --sbom cyclonedx --format json --output-file <distrooutfile>
+```
+
+This will generate an SBOM in CYCLONEDX JSON value for a *chrooted* distribution located at `/path-to-distrib/slash`
+
 ## Licence
 
 Licenced under the Apache 2.0 Licence.

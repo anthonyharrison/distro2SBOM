@@ -1,6 +1,7 @@
 # Copyright (C) 2023 Anthony Harrison
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import re
 import subprocess
 import unicodedata
@@ -12,6 +13,7 @@ class DistroBuilder:
         self.sbom_packages = {}
         self.sbom_relationships = []
         self.debug = debug
+        self.root = os.environ.get('DISTRO2SBOM_ROOT_PATH', '')
 
     def get_data(self):
         pass
@@ -69,7 +71,7 @@ class DistroBuilder:
 
     def get_system(self):
         # Extract metadata from file
-        OS_FILE = "/etc/os-release"
+        OS_FILE = f"{self.root}/etc/os-release"
         metadata = {}
         filePath = Path(OS_FILE)
         # Check path exists and is a valid file

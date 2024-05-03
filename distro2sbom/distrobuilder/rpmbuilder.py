@@ -26,6 +26,8 @@ class RpmBuilder(DistroBuilder):
             self.name = name.replace(" ", "-")
             self.release = release
         self.parent = f"Distro-{self.name}"
+        self.rpm_options = os.environ.get('DISTRO2SBOM_RPM_OPTIONS', '')
+        self.yum_options = os.environ.get('DISTRO2SBOM_YUM_OPTIONS', '')
 
     def get_data(self):
         pass
@@ -112,7 +114,7 @@ class RpmBuilder(DistroBuilder):
             self.sbom_relationships.append(self.sbom_relationship.get_relationship())
             return 0
         self.distro_packages.append(package_name)
-        out = self.run_program(f"rpm -qi {package_name}")
+        out = self.run_program(f"rpm {self.rpm_options} -qi {package_name}")
         # If package not found, no metadata returned
         if len(out) > 0:
             self.metadata = {}
@@ -130,7 +132,7 @@ class RpmBuilder(DistroBuilder):
                 return False
             # Now find package dependencies
             dependencies_out = self.run_program(
-                f"yum repoquery --deplist {package_name}"
+                f"yum repoquery {self.yum_options} --deplist {package_name}"
             )
             requires = []
             for line in dependencies_out:
@@ -266,7 +268,7 @@ class RpmBuilder(DistroBuilder):
         self.sbom_relationship.set_relationship(self.parent, "DESCRIBES", distro_root)
         self.sbom_relationships.append(self.sbom_relationship.get_relationship())
         # Get installed packages
-        out = self.run_program("rpm -qa")
+        out = self.run_program(f"rpm {self.rpm_options} -qa")
         for line in out:
             # Parse line PRODUCT-VERSION[-Other]?. If pattern not followed ignore...
             item = os.path.splitext(os.path.basename(line.strip().rstrip("\n")))[
