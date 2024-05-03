@@ -99,7 +99,7 @@ class DpkgBuilder(DistroBuilder):
 
     def get_metadata_from_file(self, package):
         # Location of Debian copyright files
-        base_file = f"/usr/share/doc/{package}/copyright"
+        base_file = f"{self.root}/usr/share/doc/{package}/copyright"
         copyright_text = ""
         license_text = "NOASSERTION"
         filename = Path(base_file)
