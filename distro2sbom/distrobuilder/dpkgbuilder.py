@@ -202,7 +202,7 @@ class DpkgBuilder(DistroBuilder):
             # Add copyright information
             if len(copyright) > 0:
                 self.sbom_package.set_copyrighttext(copyright)
-            self.sbom_package.set_purl(f"pkg:deb/{package}@{version}")
+            self.sbom_package.set_purl(f"pkg:deb/{self.get_namespace()}{package}@{version}")
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
                 cpe_version = version.replace(':','\\:')

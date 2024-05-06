@@ -100,6 +100,11 @@ def main(argv=None):
         action="store",
         help="location of distribution packages",
     )
+    input_group.add_argument(
+        "--distro-namespace",
+        action="store",
+        help="namespace for distribution",
+    )
 
     output_group = parser.add_argument_group("Output")
     output_group.add_argument(
@@ -145,7 +150,8 @@ def main(argv=None):
         "release": None,
         "package": "",
         "system": False,
-        "root" : ""
+        "root" : "",
+        "distro_namespace": ""
     }
 
     raw_args = parser.parse_args(argv[1:])
@@ -179,6 +185,7 @@ def main(argv=None):
         print("Distro name:", args["name"])
         print("Distro release:", args["release"])
         print("Distro root:", args["root"])
+        print("Distro namespace:", args["distro_namespace"])
         print("Package:", args["package"])
         print("System SBOM:", args["system"])
         print("SBOM type:", args["sbom"])
@@ -210,6 +217,9 @@ def main(argv=None):
         sbom_build = RpmBuilder(args["name"], args["release"], args["debug"])
     elif distro_type == "windows":
         sbom_build = WindowsBuilder(args["name"], args["release"], args["debug"])
+
+    if args["distro_namespace"] != "":
+        sbom_build.set_namespace(args["distro_namespace"])
 
     if args["input_file"] != "":
         # Check file exists

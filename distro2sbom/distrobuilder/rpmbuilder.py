@@ -207,7 +207,7 @@ class RpmBuilder(DistroBuilder):
             if self.get("URL") != "":
                 self.sbom_package.set_homepage(self.get("URL"))
             # External references
-            self.sbom_package.set_purl(f"pkg:rpm/{package}@{version}")
+            self.sbom_package.set_purl(f"pkg:rpm/{self.get_namespace()}{package}@{version}")
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
                 cpe_version = version.replace(':','\\:')
