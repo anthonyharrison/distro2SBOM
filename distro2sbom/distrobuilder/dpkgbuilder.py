@@ -26,7 +26,7 @@ class DpkgBuilder(DistroBuilder):
             self.name = name.replace(" ", "-")
             self.release = release
         self.parent = f"Distro-{self.name}"
-        self.root=root
+        self.root = root
 
     def parse_data(self, filename):
         # Process file containing installed applications
@@ -130,10 +130,11 @@ class DpkgBuilder(DistroBuilder):
         return license_text, copyright_text
 
     def dpkg_command(self, command_string):
-        command = f"dpkg"
+        command = "dpkg"
         if self.root != "":
-            command=f"{command} --root {self.root}"
+            command = f"{command} --root {self.root}"
         return self.run_program(f"{command} {command_string}")
+
     def process_package(self, package_name, parent="-"):
         if self.debug:
             print(f"Process package {package_name}. Parent {parent}")
@@ -202,11 +203,15 @@ class DpkgBuilder(DistroBuilder):
             # Add copyright information
             if len(copyright) > 0:
                 self.sbom_package.set_copyrighttext(copyright)
-            self.sbom_package.set_purl(f"pkg:deb/{self.get_namespace()}{package}@{version}")
+            self.sbom_package.set_purl(
+                f"pkg:deb/{self.get_namespace()}{package}@{version}"
+            )
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
-                cpe_version = version.replace(':','\\:')
-                self.sbom_package.set_cpe(f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*")
+                cpe_version = version.replace(":", "\\:")
+                self.sbom_package.set_cpe(
+                    f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*"
+                )
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))

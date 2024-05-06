@@ -13,7 +13,7 @@ class DistroBuilder:
         self.sbom_packages = {}
         self.sbom_relationships = []
         self.debug = debug
-        self.root = os.environ.get('DISTRO2SBOM_ROOT_PATH', '')
+        self.root = os.environ.get("DISTRO2SBOM_ROOT_PATH", "")
         self.namespace = ""
 
     def get_data(self):

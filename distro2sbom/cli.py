@@ -44,7 +44,6 @@ def inpath(binary):
 
 
 def main(argv=None):
-
     argv = argv or sys.argv
     app_name = "distro2sbom"
     parser = argparse.ArgumentParser(
@@ -150,8 +149,8 @@ def main(argv=None):
         "release": None,
         "package": "",
         "system": False,
-        "root" : "",
-        "distro_namespace": ""
+        "root": "",
+        "distro_namespace": "",
     }
 
     raw_args = parser.parse_args(argv[1:])
@@ -212,7 +211,9 @@ def main(argv=None):
             return -1
 
     if distro_type == "deb":
-        sbom_build = DpkgBuilder(args["name"], args["release"], args["debug"], root=args["root"])
+        sbom_build = DpkgBuilder(
+            args["name"], args["release"], args["debug"], root=args["root"]
+        )
     elif distro_type == "rpm":
         sbom_build = RpmBuilder(args["name"], args["release"], args["debug"])
     elif distro_type == "windows":

@@ -26,8 +26,8 @@ class RpmBuilder(DistroBuilder):
             self.name = name.replace(" ", "-")
             self.release = release
         self.parent = f"Distro-{self.name}"
-        self.rpm_options = os.environ.get('DISTRO2SBOM_RPM_OPTIONS', '')
-        self.yum_options = os.environ.get('DISTRO2SBOM_YUM_OPTIONS', '')
+        self.rpm_options = os.environ.get("DISTRO2SBOM_RPM_OPTIONS", "")
+        self.yum_options = os.environ.get("DISTRO2SBOM_YUM_OPTIONS", "")
 
     def get_data(self):
         pass
@@ -207,11 +207,15 @@ class RpmBuilder(DistroBuilder):
             if self.get("URL") != "":
                 self.sbom_package.set_homepage(self.get("URL"))
             # External references
-            self.sbom_package.set_purl(f"pkg:rpm/{self.get_namespace()}{package}@{version}")
+            self.sbom_package.set_purl(
+                f"pkg:rpm/{self.get_namespace()}{package}@{version}"
+            )
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
-                cpe_version = version.replace(':','\\:')
-                self.sbom_package.set_cpe(f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*")
+                cpe_version = version.replace(":", "\\:")
+                self.sbom_package.set_cpe(
+                    f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*"
+                )
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
