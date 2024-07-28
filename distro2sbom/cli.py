@@ -8,6 +8,7 @@ import textwrap
 from collections import ChainMap
 from pathlib import Path
 
+from lib4sbom.data.document import SBOMDocument
 from lib4sbom.generator import SBOMGenerator
 from lib4sbom.sbom import SBOM
 
@@ -105,6 +106,39 @@ def main(argv=None):
         help="namespace for distribution",
     )
 
+    product_group = parser.add_argument_group("Product")
+    product_group.add_argument(
+        "--product-type",
+        action="store",
+        default="application",
+        choices=[
+            "application",
+            "framework",
+            "library",
+            "container",
+            "operating-system",
+            "device",
+            "firmware",
+            "file",
+        ],
+        help="type of product (default: application)",
+    )
+    product_group.add_argument(
+        "--product-name",
+        action="store",
+        help="name of product",
+    )
+    product_group.add_argument(
+        "--product-version",
+        action="store",
+        help="version of product",
+    )
+    product_group.add_argument(
+        "--product-author",
+        action="store",
+        help="author of product",
+    )
+
     output_group = parser.add_argument_group("Output")
     output_group.add_argument(
         "-d",
@@ -151,6 +185,10 @@ def main(argv=None):
         "system": False,
         "root": "",
         "distro_namespace": "",
+        "product_type": "application",
+        "product_name": "",
+        "product_version": "",
+        "product_author": "",
     }
 
     raw_args = parser.parse_args(argv[1:])
@@ -190,6 +228,10 @@ def main(argv=None):
         print("SBOM type:", args["sbom"])
         print("Format:", bom_format)
         print("Output file:", args["output_file"])
+        print("Product Type", args["product_type"])
+        print("Product Name", args["product_name"])
+        print("Product Version", args["product_version"])
+        print("Product Author", args["product_author"])
 
     if args["distro"] == "auto":
         # determine distro type based on availability of key application
@@ -244,6 +286,15 @@ def main(argv=None):
     if len(sbom_build.get_packages()) > 0:
         # Generate SBOM file
         distro_sbom = SBOM()
+        sbom_doc = SBOMDocument()
+        sbom_doc.set_metadata_type(args["product_type"])
+        if args["product_name"] != "":
+            sbom_doc.set_name(args["product_name"])
+        if args["product_version"] != "":
+            sbom_doc.set_metadata_version(args["product_version"])
+        if args["product_author"] != "":
+            sbom_doc.set_metadata_supplier(args["product_author"])
+        distro_sbom.add_document(sbom_doc.get_document())
         distro_sbom.add_packages(sbom_build.get_packages())
         distro_sbom.add_relationships(sbom_build.get_relationships())
 

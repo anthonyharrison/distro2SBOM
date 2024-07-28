@@ -26,8 +26,9 @@ up for testing using different versions of Python.
 ## Usage
 
 ```
-usage: distro2sbom [-h] [--distro {rpm,deb,windows,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-s] [--root ROOT] [--distro-namespace DISTRO_NAMESPACE] [-d] [--sbom {spdx,cyclonedx}]
-                   [--format {tag,json,yaml}] [-o OUTPUT_FILE] [-V]
+usage: distro2sbom [-h] [--distro {rpm,deb,windows,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-s] [--root ROOT] [--distro-namespace DISTRO_NAMESPACE]
+                   [--product-type {application,framework,library,container,operating-system,device,firmware,file}] [--product-name PRODUCT_NAME] [--product-version PRODUCT_VERSION]
+                   [--product-author PRODUCT_AUTHOR] [-d] [--sbom {spdx,cyclonedx}] [--format {tag,json,yaml}] [-o OUTPUT_FILE] [-V]
 
 Distro2Sbom generates a Software Bill of Materials for the specified package or distribution.
 
@@ -50,6 +51,16 @@ Input:
   --distro-namespace DISTRO_NAMESPACE
                         namespace for distribution
 
+Product:
+  --product-type {application,framework,library,container,operating-system,device,firmware,file}
+                        type of product (default: application)
+  --product-name PRODUCT_NAME
+                        name of product
+  --product-version PRODUCT_VERSION
+                        version of product
+  --product-author PRODUCT_AUTHOR
+                        author of product
+
 Output:
   -d, --debug           add debug information
   --sbom {spdx,cyclonedx}
@@ -58,7 +69,6 @@ Output:
                         specify format of software bill of materials (sbom) (default: tag)
   -o OUTPUT_FILE, --output-file OUTPUT_FILE
                         output filename (default: output to stdout)
-
 ```
 						
 ## Operation
@@ -133,6 +143,9 @@ The `--root` option is used to specify an alternative directory location for the
 The `--disto-namespace` option is used to specify a namespace to be included in the generated [PURL](https://github.com/package-url/purl-spec) identifiers for the packages.
 
 At least one of the `--input-file`, `--package` or `--system` options must be specified. If multiple options are specified, the `--input-file` option followed by the `--system` option will be assumed.
+
+The `--product-type`, `--product-name`, `--product-version` and `--product-author` options allow the specification of the top level
+component within the SBOM. These option only apply to CycloneDX SBOMs.
 
 The `--sbom` option is used to specify the format of the generated SBOM (the default is SPDX). The `--format` option
 can be used to specify the formatting of the SBOM (the default is Tag Value format for a SPDX SBOM). JSON format is supported for both
