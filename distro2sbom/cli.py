@@ -121,7 +121,7 @@ def main(argv=None):
             "firmware",
             "file",
         ],
-        help="type of product (default: application)",
+        help="type of product",
     )
     product_group.add_argument(
         "--product-name",
@@ -216,6 +216,12 @@ def main(argv=None):
         # Only json format valid for CycloneDX
         bom_format = "json"
 
+    if args["system"]:
+        # Always operating system
+        product_type = "operating-system"
+    else:
+        product_type = args["product_type"]
+
     if args["debug"]:
         print("Distro type:", args["distro"])
         print("Input file:", args["input_file"])
@@ -228,7 +234,7 @@ def main(argv=None):
         print("SBOM type:", args["sbom"])
         print("Format:", bom_format)
         print("Output file:", args["output_file"])
-        print("Product Type", args["product_type"])
+        print("Product Type", product_type)
         print("Product Name", args["product_name"])
         print("Product Version", args["product_version"])
         print("Product Author", args["product_author"])
@@ -288,7 +294,7 @@ def main(argv=None):
         distro_sbom = SBOM()
         sbom_doc = SBOMDocument()
         sbom_doc.set_value("lifecycle", "operations")
-        sbom_doc.set_metadata_type(args["product_type"])
+        sbom_doc.set_metadata_type(product_type)
         if args["product_name"] != "":
             sbom_doc.set_name(args["product_name"])
         if args["product_version"] != "":

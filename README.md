@@ -53,7 +53,7 @@ Input:
 
 Product:
   --product-type {application,framework,library,container,operating-system,device,firmware,file}
-                        type of product (default: application)
+                        type of product
   --product-name PRODUCT_NAME
                         name of product
   --product-version PRODUCT_VERSION
@@ -145,7 +145,7 @@ The `--disto-namespace` option is used to specify a namespace to be included in 
 At least one of the `--input-file`, `--package` or `--system` options must be specified. If multiple options are specified, the `--input-file` option followed by the `--system` option will be assumed.
 
 The `--product-type`, `--product-name`, `--product-version` and `--product-author` options allow the specification of the top level
-component within the SBOM. These option only apply to CycloneDX SBOMs.
+component within the SBOM. These option only apply to CycloneDX SBOMs. The default for product type is 'application' but it is always 'operating-system' if the `--system` option is specified.
 
 The `--sbom` option is used to specify the format of the generated SBOM (the default is SPDX). The `--format` option
 can be used to specify the formatting of the SBOM (the default is Tag Value format for a SPDX SBOM). JSON format is supported for both
