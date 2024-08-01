@@ -287,6 +287,7 @@ def main(argv=None):
         # Generate SBOM file
         distro_sbom = SBOM()
         sbom_doc = SBOMDocument()
+        sbom_doc.set_value("lifecycle", "operations")
         sbom_doc.set_metadata_type(args["product_type"])
         if args["product_name"] != "":
             sbom_doc.set_name(args["product_name"])
