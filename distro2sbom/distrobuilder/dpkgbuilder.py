@@ -105,7 +105,7 @@ class DpkgBuilder(DistroBuilder):
         filename = Path(base_file)
         # Check path exists and is a valid file
         if filename.exists() and filename.is_file():
-            with open(filename, "r") as f:
+            with open(filename, "r", errors="replace") as f:
                 lines = f.readlines()
                 copyright_found = False
                 license_found = False
