@@ -65,7 +65,7 @@ class DpkgBuilder(DistroBuilder):
                         " +", " ", line[2:].strip().rstrip("\n")
                     ).split(" ")
                     self.sbom_package.initialise()
-                    package = line_element[0].lower().replace("_", "-")
+                    package = line_element[0].lower().replace("_", "-").split(":")[0]
                     version = line_element[1]
                     self.sbom_package.set_name(package)
                     self.sbom_package.set_version(version)
