@@ -77,6 +77,9 @@ class DpkgBuilder(DistroBuilder):
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     description = " ".join(n for n in line_element[3:])
                     self.sbom_package.set_summary(description)
+                    self.sbom_package.set_purl(
+                        f"pkg:deb/{self.get_namespace()}{package}@{version}"
+                    )
                     # Store package data
                     self.sbom_packages[
                         (
