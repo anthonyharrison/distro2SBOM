@@ -67,6 +67,11 @@ class DpkgBuilder(DistroBuilder):
                     self.sbom_package.initialise()
                     package = line_element[0].lower().replace("_", "-")
                     version = line_element[1]
+                    if ":" in package:
+                        package, arch = package.split(":", 1)
+                        arch_component = f"?arch={arch}"
+                    else:
+                        arch_component = ""
                     self.sbom_package.set_name(package)
                     self.sbom_package.set_version(version)
                     self.sbom_package.set_type("application")
@@ -77,6 +82,9 @@ class DpkgBuilder(DistroBuilder):
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     description = " ".join(n for n in line_element[3:])
                     self.sbom_package.set_summary(description)
+                    self.sbom_package.set_purl(
+                        f"pkg:deb/{self.get_namespace()}{package}@{version}{arch_component}"
+                    )
                     # Store package data
                     self.sbom_packages[
                         (
