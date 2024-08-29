@@ -211,8 +211,11 @@ class DpkgBuilder(DistroBuilder):
             # Add copyright information
             if len(copyright) > 0:
                 self.sbom_package.set_copyrighttext(copyright)
+            arch_component=self.get("Architecture")
+            if len(arch_component)> 0:
+                arch_component=f"?{arch_component}"
             self.sbom_package.set_purl(
-                f"pkg:deb/{self.get_namespace()}{package}@{version}"
+                f"pkg:deb/{self.get_namespace()}{package}@{version}{arch_component}"
             )
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
