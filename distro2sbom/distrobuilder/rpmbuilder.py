@@ -81,6 +81,9 @@ class RpmBuilder(DistroBuilder):
                     license = "NOASSERTION"
                     self.sbom_package.set_licensedeclared(license)
                     self.sbom_package.set_licenseconcluded(license)
+                    self.sbom_package.set_purl(
+                        f"pkg:rpm/{self.get_namespace()}{package}@{version}"
+                    )
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     # Store package data
                     self.sbom_packages[
