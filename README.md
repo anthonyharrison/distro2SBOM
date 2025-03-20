@@ -26,7 +26,7 @@ up for testing using different versions of Python.
 ## Usage
 
 ```
-usage: distro2sbom [-h] [--distro {rpm,deb,windows,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-s] [--root ROOT] [--distro-namespace DISTRO_NAMESPACE]
+usage: distro2sbom [-h] [--distro {rpm,deb,windows,freebsd,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-s] [--root ROOT] [--distro-namespace DISTRO_NAMESPACE]
                    [--product-type {application,framework,library,container,operating-system,device,firmware,file}] [--product-name PRODUCT_NAME] [--product-version PRODUCT_VERSION]
                    [--product-author PRODUCT_AUTHOR] [-d] [--sbom {spdx,cyclonedx}] [--format {tag,json,yaml}] [-o OUTPUT_FILE] [-V]
 
@@ -129,6 +129,25 @@ The `--input-file` option is used to provide a filename containing the list of p
   Caption           : Python 3.10.5 Utility Scripts (64-bit)
 
     ```
+- freebsd
+  Sample of pkg info -a 
+  ```console
+  py39-s3transfer-0.10.1         Amazon S3 Transfer Manager for Python
+  py39-setuptools-63.1.0_1       Python packages installer
+  py39-six-1.16.0                Python 2 and 3 compatibility utilities
+  py39-urllib3-1.26.18,1         HTTP library with thread-safe connection pooling, file post, and more
+  py39-yaml-6.0.1                Python YAML parser
+  python311-3.11.9               Interpreted object-oriented programming language
+  python38-3.8.19_2              Interpreted object-oriented programming language
+  python39-3.9.19                Interpreted object-oriented programming language
+  readline-8.2.10                Library for editing command lines as they are typed
+  sudo-1.9.15p5_4                Allow others to run commands as root
+  tiff-4.6.0                     Tools and library routines for working with TIFF images
+  xorg-fonts-truetype-7.7_1      X.Org TrueType fonts
+  xorgproto-2024.1               X Window System unified protocol definitions
+  zstd-1.5.6                     Fast real-time compression algorithm
+  ```
+
 
 If the specified filename is not found, the tool will terminate.
 
