@@ -229,7 +229,7 @@ class FreeBSDBuilder(DistroBuilder):
             if len(arch_component)> 0:
                 arch_component=f"?{arch_component}"
             self.sbom_package.set_purl(
-                f"pkg:freebsd/{self.get_namespace()}{package}@{version}{arch_component}"
+                f"pkg:generic/{package}@{version}?distro=freebsd{arch_component}"
             )
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
