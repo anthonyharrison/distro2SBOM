@@ -206,6 +206,9 @@ def main(argv=None):
     elif args["name"] is None and args["release"] is not None:
         print("[ERROR] distro name must be specified.")
         return -1
+    elif args["input_file"] != "" and args["name"] is None and args["release"] is None:
+        print ("[ERROR] distro name and release must be specified.")
+        return -1
     elif args["input_file"] == "" and args["package"] == "" and not args["system"]:
         print("[ERROR] distro file or package name must be specified.")
         return -1

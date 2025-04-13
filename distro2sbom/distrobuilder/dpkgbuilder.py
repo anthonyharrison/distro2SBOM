@@ -18,18 +18,21 @@ class DpkgBuilder(DistroBuilder):
         self.sbom_relationship = SBOMRelationship()
         self.license = LicenseScanner()
         self.distro_packages = []
-        self.system_data = self.get_system()
         if name is None and release is None:
+            self.system_data = self.get_system()
             self.name = self.system_data["name"].replace(" ", "-")
             self.release = self.system_data["version_id"]
+            self.distro = self.system_data.get("version_codename")
         else:
             self.name = name.replace(" ", "-")
             self.release = release
+            self.system_data = {}
         self.parent = f"Distro-{self.name}"
         self.root = root
 
     def parse_data(self, filename):
         # Process file containing installed applications
+        self.distro = self.get_namespace()
         with open(filename) as dir_file:
             lines = dir_file.readlines()
         if len(lines) > 0:
@@ -43,12 +46,12 @@ class DpkgBuilder(DistroBuilder):
             license = "NOASSERTION"
             self.sbom_package.set_licensedeclared(license)
             self.sbom_package.set_licenseconcluded(license)
-            if self.system_data.get("id") is not None:
-                self.sbom_package.set_supplier(
-                    "Organisation", self.system_data.get("id")
-                )
-            else:
-                self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
+            # if self.system_data.get("id") is not None:
+            #     self.sbom_package.set_supplier(
+            #         "Organisation", self.system_data.get("id")
+            #     )
+            # else:
+            self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
@@ -71,7 +74,10 @@ class DpkgBuilder(DistroBuilder):
                         package, arch = package.split(":", 1)
                         arch_component = f"?arch={arch}"
                     else:
-                        arch_component = ""
+                        arch_component = f"?arch={line_element[2]}"
+                    if self.distro is not None:
+                        # Remember to remove trialing /
+                        arch_component = f"{arch_component}&distro={self.distro[:-1]}"
                     self.sbom_package.set_name(package)
                     self.sbom_package.set_version(version)
                     self.sbom_package.set_type("application")
@@ -144,6 +150,7 @@ class DpkgBuilder(DistroBuilder):
         return self.run_program(f"{command} {command_string}")
 
     def process_package(self, package_name, parent="-"):
+        self.set_namespace(self.system_data.get("id"))
         if self.debug:
             print(f"Process package {package_name}. Parent {parent}")
         # Check if we have already processed this package
@@ -213,7 +220,11 @@ class DpkgBuilder(DistroBuilder):
                 self.sbom_package.set_copyrighttext(copyright)
             arch_component=self.get("Architecture")
             if len(arch_component)> 0:
-                arch_component=f"?{arch_component}"
+                arch_component=f"?arch={arch_component}"
+                if self.distro is not None:
+                    arch_component = f"{arch_component}&distro={self.distro}"
+            elif self.distro is not None:
+                arch_component = f"?distro={self.distro}"
             self.sbom_package.set_purl(
                 f"pkg:deb/{self.get_namespace()}{package}@{version}{arch_component}"
             )

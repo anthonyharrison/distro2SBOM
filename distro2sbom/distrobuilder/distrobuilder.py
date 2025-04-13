@@ -14,7 +14,7 @@ class DistroBuilder:
         self.sbom_relationships = []
         self.debug = debug
         self.root = os.environ.get("DISTRO2SBOM_ROOT_PATH", "")
-        self.namespace = ""
+        self.namespace = None
 
     def get_data(self):
         pass
@@ -89,6 +89,6 @@ class DistroBuilder:
         self.namespace = namespace
 
     def get_namespace(self):
-        if self.namespace != "":
+        if self.namespace != None:
             return f"{self.namespace}/"
         return self.namespace

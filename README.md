@@ -76,8 +76,8 @@ Output:
 The `--distro` option is used to identify the type of distribution. The default option is auto which attempts to determine the type of distribution by searching for the
 presence of key applications required by the tool. If none of the required applications are found, the tool terminates.
 
-The `--name` option and `--release` option is used to identify the name and release of the distribution. These options are
-optional but if they are specified, values for both options are required. If they are not specified, values for these options shall be obtained from system files installed on the system.
+The `--name` option and `--release` option is used to identify the name and release of the distribution. Values for both options are required to be specified if the
+`--input-file` option is used. If they are not specified, values for these options shall be obtained from system files installed on the system.
 
 The `--input-file` option is used to provide a filename containing the list of packages installed on the system. The format of the file is dependent on the specified `--distro` option.
 
@@ -140,7 +140,7 @@ This option is not supported if the `--distro` option is set to 'windows'.
 
 The `--root` option is used to specify an alternative directory location for the installed packages. This option only applies for 'deb' distributions.
 
-The `--disto-namespace` option is used to specify a namespace to be included in the generated [PURL](https://github.com/package-url/purl-spec) identifiers for the packages.
+The `--disto-namespace` option is used to specify a namespace to be included in the generated [PURL](https://github.com/package-url/purl-spec) identifiers for the packages. This is mandatory if the `--input-file` option is specified.
 
 At least one of the `--input-file`, `--package` or `--system` options must be specified. If multiple options are specified, the `--input-file` option followed by the `--system` option will be assumed.
 
@@ -171,7 +171,7 @@ This will automatically detect the type of distribution and generate an SBOM in 
 To generate an SBOM for a system distribution.
 
 ```bash
-distro2sbom --distro deb --name <distro name> --release <distro release> --input-file <distrofile> --sbom cyclonedx --output-file <distrooutfile>
+distro2sbom --distro deb --name <distro name> --release <distro release> --distro-namespace <namespace> --input-file <distrofile> --sbom cyclonedx --output-file <distrooutfile>
 ```
 
 This will generate an SBOM in CycloneDX JSON value for a distribution file in dpkg format (indicated by the 'deb' option)
