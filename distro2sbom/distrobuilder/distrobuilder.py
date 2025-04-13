@@ -9,12 +9,13 @@ from pathlib import Path
 
 
 class DistroBuilder:
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, ecosystem="generic"):
         self.sbom_packages = {}
         self.sbom_relationships = []
         self.debug = debug
         self.root = os.environ.get("DISTRO2SBOM_ROOT_PATH", "")
         self.namespace = None
+        self.ecosystem = ecosystem
 
     def get_data(self):
         pass
@@ -86,9 +87,20 @@ class DistroBuilder:
         return metadata
 
     def set_namespace(self, namespace):
-        self.namespace = namespace
+        if namespace != "":
+            self.namespace = namespace
 
     def get_namespace(self):
         if self.namespace != None:
             return f"{self.namespace}/"
         return self.namespace
+
+    def get_purl(self, package, version, architecture, distro = None):
+        arch_component = architecture
+        if len(arch_component) > 0:
+            arch_component = f"?arch={arch_component}"
+            if distro is not None:
+                arch_component = f"{arch_component}&distro={distro}"
+        elif distro is not None:
+            arch_component = f"?distro={distro}"
+        return f"pkg:{self.ecosystem}/{self.get_namespace()}{package}@{version}{arch_component}"

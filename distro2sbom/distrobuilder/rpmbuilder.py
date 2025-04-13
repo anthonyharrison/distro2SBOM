@@ -12,19 +12,22 @@ from distro2sbom.distrobuilder.distrobuilder import DistroBuilder
 
 
 class RpmBuilder(DistroBuilder):
-    def __init__(self, name, release, debug=False):
-        super().__init__(debug)
+    def __init__(self, name, release, debug=False, namespace=""):
+        super().__init__(debug, ecosystem="rpm")
         self.sbom_package = SBOMPackage()
         self.sbom_relationship = SBOMRelationship()
         self.license = LicenseScanner()
         self.distro_packages = []
+        self.set_namespace(namespace)
         self.system_data = self.get_system()
         if name is None and release is None:
             self.name = self.system_data["name"].replace(" ", "-")
             self.release = self.system_data["version_id"]
+            self.distro = self.system_data.get("version_codename")
         else:
             self.name = name.replace(" ", "-")
             self.release = release
+            self.distro = self.get_namespace()
         self.parent = f"Distro-{self.name}"
         self.rpm_options = os.environ.get("DISTRO2SBOM_RPM_OPTIONS", "")
         self.yum_options = os.environ.get("DISTRO2SBOM_YUM_OPTIONS", "")
@@ -47,12 +50,7 @@ class RpmBuilder(DistroBuilder):
             license = "NOASSERTION"
             self.sbom_package.set_licensedeclared(license)
             self.sbom_package.set_licenseconcluded(license)
-            if self.system_data.get("id") is not None:
-                self.sbom_package.set_supplier(
-                    "Organisation", self.system_data.get("id")
-                )
-            else:
-                self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
+            self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
@@ -64,16 +62,26 @@ class RpmBuilder(DistroBuilder):
             self.sbom_relationships.append(self.sbom_relationship.get_relationship())
             for line in lines:
                 line_element = line.strip().rstrip("\n")
+                # Typical line is accountsservice-libs-0.6.55-10.el9.x86_64
+                # Package Name = accountsservice-libs
+                # Version = 0.6.55-10.el9
+                # Architecture = x86_64
                 # Extract the package name (without extension) - make lowercase
                 item = os.path.splitext(os.path.basename(line_element))[0].lower()
                 # Parse line PRODUCT-VERSION[-Other]?. If pattern not followed ignore...
                 # Version assumed to start with digit.
                 product_version = re.search(r"-\d[.\d]*[a-z0-9]*", item)
+                # This will include the architecture component
+                product_release = line_element.split("-")[-1]
+                # Extract architecture from last element
+                architecture = line_element.split(".")[-1]
+                # Remove architecture component
+                product_release = product_release.replace(f".{architecture}","")
                 if product_version is not None:
-                    # Find
+                    # Find package name
                     package = item[: product_version.start()].lower().replace("_", "-")
                     self.sbom_package.initialise()
-                    version = product_version.group(0)[1:]
+                    version = f"{product_version.group(0)[1:]}-{product_release}"
                     self.sbom_package.set_name(package)
                     self.sbom_package.set_version(version)
                     self.sbom_package.set_type("application")
@@ -82,7 +90,8 @@ class RpmBuilder(DistroBuilder):
                     self.sbom_package.set_licensedeclared(license)
                     self.sbom_package.set_licenseconcluded(license)
                     self.sbom_package.set_purl(
-                        f"pkg:rpm/{self.get_namespace()}{package}@{version}"
+                        self.get_purl(package, version, architecture,
+                                      self.distro[:-1] if self.distro is not None else None)
                     )
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     # Store package data
@@ -106,6 +115,7 @@ class RpmBuilder(DistroBuilder):
         return ""
 
     def process_package(self, package_name, parent="-"):
+        self.set_namespace(self.system_data.get("id"))
         if self.debug:
             print(f"Process package {package_name}. Parent {parent}")
         # Check if we have already processed this package
@@ -162,6 +172,8 @@ class RpmBuilder(DistroBuilder):
             self.sbom_package.initialise()
             package = self.get("Name")
             version = self.get("Version")
+            if self.get("Release") != "":
+                version = f'{version}-{self.get("Release")}'
             if parent == "-":
                 self.sbom_package.set_type("application")
             self.sbom_package.set_name(package)
@@ -176,12 +188,6 @@ class RpmBuilder(DistroBuilder):
                 self.sbom_package.set_licensedeclared(license)
             # Report license if valid SPDX identifier
             self.sbom_package.set_licenseconcluded(license)
-            # Add comment if metadata license was modified
-            # if len(license_text) > 0 and license != license_text:
-            #    self.sbom_package.set_licensecomments(
-            #        f"{self.get('Name')} declares {license_text} which is not currently a valid SPDX License identifier or expression."
-            #    )
-
             if license != "NOASSERTION":
                 license_comment = (
                     "This information was automatically extracted from the package."
@@ -211,13 +217,26 @@ class RpmBuilder(DistroBuilder):
                 self.sbom_package.set_homepage(self.get("URL"))
             # External references
             self.sbom_package.set_purl(
-                f"pkg:rpm/{self.get_namespace()}{package}@{version}"
+                self.get_purl(package, version, self.get("Architecture"),
+                              self.distro[:-1] if self.distro is not None else None)
             )
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
                 cpe_version = version.replace(":", "\\:")
                 self.sbom_package.set_cpe(
                     f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*"
+                )
+            if self.get("Build Date") != "":
+                self.sbom_package.set_value(
+                    "build_date", self.get("Build Date")
+                )
+            if self.get("Install Date") != "":
+                self.sbom_package.set_value(
+                    "release_date", self.get("Install Date")
+                )
+            if self.get("Size"):
+                self.sbom_package.set_property(
+                    "filesize", self.get("Size")
                 )
             # Store package data
             self.sbom_packages[
@@ -278,10 +297,8 @@ class RpmBuilder(DistroBuilder):
         out = self.run_program(f"rpm {self.rpm_options} -qa")
         for line in out:
             # Parse line PRODUCT-VERSION[-Other]?. If pattern not followed ignore...
-            item = os.path.splitext(os.path.basename(line.strip().rstrip("\n")))[
-                0
-            ].lower()
-            # Version assumed to start with digit.
+            item = os.path.splitext(os.path.basename(line.strip().rstrip("\n")))[0].lower()
+            # Find start of version so that product name can be found
             product_version = re.search(r"-\d[.\d]*[a-z0-9]*", item)
             if product_version is None:
                 continue

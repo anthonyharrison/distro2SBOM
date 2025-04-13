@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Anthony Harrison
+# Copyright (C) 2025 Anthony Harrison
 # SPDX-License-Identifier: Apache-2.0
 
 import re
@@ -12,27 +12,27 @@ from distro2sbom.distrobuilder.distrobuilder import DistroBuilder
 
 
 class DpkgBuilder(DistroBuilder):
-    def __init__(self, name, release, debug=False, root=""):
-        super().__init__(debug)
+    def __init__(self, name, release, debug=False, root="", namespace=""):
+        super().__init__(debug, ecosystem="deb")
         self.sbom_package = SBOMPackage()
         self.sbom_relationship = SBOMRelationship()
         self.license = LicenseScanner()
         self.distro_packages = []
+        self.set_namespace(namespace)
+        self.system_data = self.get_system()
         if name is None and release is None:
-            self.system_data = self.get_system()
             self.name = self.system_data["name"].replace(" ", "-")
             self.release = self.system_data["version_id"]
             self.distro = self.system_data.get("version_codename")
         else:
             self.name = name.replace(" ", "-")
             self.release = release
-            self.system_data = {}
+            self.distro = self.get_namespace()
         self.parent = f"Distro-{self.name}"
         self.root = root
 
     def parse_data(self, filename):
         # Process file containing installed applications
-        self.distro = self.get_namespace()
         with open(filename) as dir_file:
             lines = dir_file.readlines()
         if len(lines) > 0:
@@ -46,11 +46,6 @@ class DpkgBuilder(DistroBuilder):
             license = "NOASSERTION"
             self.sbom_package.set_licensedeclared(license)
             self.sbom_package.set_licenseconcluded(license)
-            # if self.system_data.get("id") is not None:
-            #     self.sbom_package.set_supplier(
-            #         "Organisation", self.system_data.get("id")
-            #     )
-            # else:
             self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
             # Store package data
             self.sbom_packages[
@@ -71,13 +66,12 @@ class DpkgBuilder(DistroBuilder):
                     package = line_element[0].lower().replace("_", "-")
                     version = line_element[1]
                     if ":" in package:
-                        package, arch = package.split(":", 1)
-                        arch_component = f"?arch={arch}"
+                        package, architecture = package.split(":", 1)
                     else:
-                        arch_component = f"?arch={line_element[2]}"
-                    if self.distro is not None:
-                        # Remember to remove trialing /
-                        arch_component = f"{arch_component}&distro={self.distro[:-1]}"
+                        architecture = line_element[2]
+                    self.sbom_package.set_purl(
+                        self.get_purl(package, version, architecture, self.distro[:-1] if self.distro is not None else None)
+                    )
                     self.sbom_package.set_name(package)
                     self.sbom_package.set_version(version)
                     self.sbom_package.set_type("application")
@@ -88,9 +82,6 @@ class DpkgBuilder(DistroBuilder):
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     description = " ".join(n for n in line_element[3:])
                     self.sbom_package.set_summary(description)
-                    self.sbom_package.set_purl(
-                        f"pkg:deb/{self.get_namespace()}{package}@{version}{arch_component}"
-                    )
                     # Store package data
                     self.sbom_packages[
                         (
@@ -140,7 +131,6 @@ class DpkgBuilder(DistroBuilder):
                         if len(license_info) > 0:
                             license_text = license_info
                             license_found = True
-
         return license_text, copyright_text
 
     def dpkg_command(self, command_string):
@@ -218,15 +208,8 @@ class DpkgBuilder(DistroBuilder):
             # Add copyright information
             if len(copyright) > 0:
                 self.sbom_package.set_copyrighttext(copyright)
-            arch_component=self.get("Architecture")
-            if len(arch_component)> 0:
-                arch_component=f"?arch={arch_component}"
-                if self.distro is not None:
-                    arch_component = f"{arch_component}&distro={self.distro}"
-            elif self.distro is not None:
-                arch_component = f"?distro={self.distro}"
             self.sbom_package.set_purl(
-                f"pkg:deb/{self.get_namespace()}{package}@{version}{arch_component}"
+                self.get_purl(package, version, self.get("Architecture"), self.distro)
             )
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
