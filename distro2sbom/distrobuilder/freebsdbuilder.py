@@ -42,9 +42,9 @@ class FreeBSDBuilder(DistroBuilder):
             self.sbom_package.set_version(self.release)
             self.sbom_package.set_type("operating-system")
             self.sbom_package.set_filesanalysis(False)
-            license = "NOASSERTION"
-            self.sbom_package.set_licensedeclared(license)
-            self.sbom_package.set_licenseconcluded(license)
+            licenses = "NOASSERTION"
+            self.sbom_package.set_licensedeclared(licenses)
+            self.sbom_package.set_licenseconcluded(licenses)
             if self.system_data.get("id") is not None:
                 self.sbom_package.set_supplier(
                     "Organisation", self.system_data.get("id")
@@ -75,14 +75,14 @@ class FreeBSDBuilder(DistroBuilder):
                     self.sbom_package.set_version(version)
                     self.sbom_package.set_type("application")
                     self.sbom_package.set_filesanalysis(False)
-                    license = "NOASSERTION"
-                    self.sbom_package.set_licensedeclared(license)
-                    self.sbom_package.set_licenseconcluded(license)
+                    licenses = "NOASSERTION"
+                    self.sbom_package.set_licensedeclared(licenses)
+                    self.sbom_package.set_licenseconcluded(licenses)
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     description = " ".join(n for n in line_element[3:])
                     self.sbom_package.set_summary(description)
                     self.sbom_package.set_purl(
-                        f"pkg:freebsd/{self.get_namespace()}{package}@{version}{arch_component}"
+                        f"pkg:generic/{package}@{version}?distro=freebsd{arch_component}"
                     )
                     # Store package data
                     self.sbom_packages[
@@ -103,44 +103,6 @@ class FreeBSDBuilder(DistroBuilder):
         if attribute in self.metadata:
             return self.metadata[attribute].lstrip()
         return ""
-
-    def get_metadata_from_file(self, package):
-        license_dir = f"{self.root}/usr/local/share/licenses"
-        copyright_text = ""
-        license_text = "NOASSERTION"
-
-        package_dir = Path(license_dir) / package
-        if not package_dir.exists():
-            # Try to find a directory that starts with the package name (to handle versioned directories)
-            matching_dirs = list(Path(license_dir).glob(f"{package}-*"))
-            if matching_dirs:
-                package_dir = matching_dirs[0]
-
-        license_file = package_dir / "LICENSE"
-
-        if license_file.exists() and license_file.is_file():
-            with open(license_file, "r", errors="replace") as f:
-                content = f.read()
-
-                # Try to extract the license information
-                single_license_match = re.search(r'This package has a single license: (.*?)\.', content)
-                multiple_licenses_match = re.search(r'This package has multiple licenses \(all of\):(.*?)(?=\n\n|\Z)',
-                                                    content, re.DOTALL)
-
-                if single_license_match:
-                    license_text = single_license_match.group(1).strip()
-                elif multiple_licenses_match:
-                    licenses = re.findall(r'- (\w+) \((.*?)\)', multiple_licenses_match.group(1))
-                    license_text = " AND ".join([license[0] for license in licenses])
-                else:
-                    # If neither format is found, use the whole content as license text
-                    license_text = content.strip()
-
-                copyright_match = re.search(r'Copyright \(c\).*', content)
-                if copyright_match:
-                    copyright_text = copyright_match.group(0)
-
-        return license_text, copyright_text
 
     def pkg_command(self, command_string):
         command = "pkg"
@@ -337,9 +299,9 @@ class FreeBSDBuilder(DistroBuilder):
         self.sbom_package.set_version(self.release)
         self.sbom_package.set_type("operating-system")
         self.sbom_package.set_filesanalysis(False)
-        license = "NOASSERTION"
-        self.sbom_package.set_licensedeclared(license)
-        self.sbom_package.set_licenseconcluded(license)
+        licenses = "NOASSERTION"
+        self.sbom_package.set_licensedeclared(licenses)
+        self.sbom_package.set_licenseconcluded(licenses)
         if self.system_data.get("home_url") is not None:
             self.sbom_package.set_homepage(self.system_data.get("home_url"))
         if self.system_data.get("id") is not None:
