@@ -2,6 +2,7 @@
 # Copyright (C) 2025 Lucas Holt
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import re
 from pathlib import Path
 
@@ -190,25 +191,11 @@ class FreeBSDBuilder(DistroBuilder):
             if parent == "-":
                 self.sbom_package.set_type("application")
             self.sbom_package.set_filesanalysis(False)
-            license_text, copyright = self.get_metadata_from_file(package_name)
-            license = self.license.find_license(license_text)
-            self.sbom_package.set_licensedeclared(license)
-            self.sbom_package.set_licenseconcluded(license)
-            if license != "NOASSERTION":
-                license_comment = (
-                    "This information was automatically extracted from the package."
-                )
-                if license_text != "NOASSERTION" and license != license_text:
-                    self.sbom_package.set_licensedeclared("NOASSERTION")
-                    license_comment = f"{license_comment} {self.sbom_package.get_name()} declares {license_text} which is not currently a valid SPDX License identifier or expression."
-                if self.license.deprecated(license):
-                    license_comment = f"{license_comment} {license} is now deprecated."
-                self.sbom_package.set_licensecomments(license_comment)
-            elif license_text != "NOASSERTION":
-                license_comment = f"{self.sbom_package.get_name()} declares {license_text} which is not currently a valid SPDX License identifier or expression."
-                if self.license.deprecated(license):
-                    license_comment = f"{license_comment} {license} is now deprecated."
-                self.sbom_package.set_licensecomments(license_comment)
+
+            licenses = self.get_licenses(package_name)
+            self.sbom_package.set_licensedeclared(licenses)
+            self.sbom_package.set_licenseconcluded(licenses)
+
             supplier = self.get("Maintainer")
             if len(supplier.split()) > 3:
                 self.sbom_package.set_supplier(
@@ -222,9 +209,6 @@ class FreeBSDBuilder(DistroBuilder):
                 self.sbom_package.set_summary(self.get("Comment"))
             if self.get("WWW") != "":
                 self.sbom_package.set_homepage(self.get("WWW"))
-            # Add copyright information
-            if len(copyright) > 0:
-                self.sbom_package.set_copyrighttext(copyright)
             arch_component=self.get("Architecture")
             if len(arch_component)> 0:
                 arch_component=f"?{arch_component}"
@@ -271,6 +255,80 @@ class FreeBSDBuilder(DistroBuilder):
         self.parent = f"{self.name}-{self.release}-Package-{module_name}"
         if self.process_package(module_name):
             self.analyze(self.get("Package"), self.get("Depends"))
+
+    def get_licenses(self, product):
+        LICENSE_BASE = "/usr/local/share/licenses/"
+        directory_path = f"{LICENSE_BASE}{product}"
+        licenses = []
+        ignore = ["LICENSE", "catalog.mk"]
+        if os.path.isdir(directory_path):
+            for entry in os.listdir(directory_path):
+                if os.path.isfile(os.path.join(directory_path, entry)):
+                    if entry not in ignore:
+                        licenses.append(self.translate_license_to_spdx(entry))
+        if len(licenses) == 0:
+            return "NOASSERTION"
+
+        # Assume licenses are any of.
+        # Return SPDX license expression
+        return ' OR '.join(licenses)
+
+    def translate_license_to_spdx(self, freebsd_license):
+        # Common FreeBSD license translations
+        license_map = {
+            "BSD0CLAUSE": "0BSD",
+            "BSD1CLAUSE": "BSD-1-Clause",
+            "BSD2CLAUSE": "BSD-2-Clause",
+            "BSD3CLAUSE": "BSD-3-Clause",
+            "BSD4CLAUSE": "BSD-4-Clause",
+            "MIT": "MIT",
+            "APACHE10": "Apache-1.0",
+            "APACHE11": "Apache-1.1",
+            "APACHE20": "Apache-2.0",
+            "GPLv1": "GPL-1.0-only",
+            "GPLv1+": "GPL-1.0-or-later",
+            "GPLv2": "GPL-2.0-only",
+            "GPLv2+": "GPL-2.0-or-later",
+            "GPLv3": "GPL-3.0-only",
+            "GPLv3+": "GPL-3.0-or-later",
+            "GPLv3RLE": "GPL-3.0-with-GCC-exception",
+            "GPLv3RLE+": "GPL-3.0-or-later-with-GCC-exception",
+            "AGPLv3": "AGPL-3.0-only",
+            "AGPLv3+": "AGPL-3.0-or-later",
+            "LGPL20": "LGPL-2.0-only",
+            "LGPL20+": "LGPL-2.0-or-later",
+            "LGPL21": "LGPL-2.1-only",
+            "LGPL21+": "LGPL-2.1-or-later",
+            "LGPL3": "LGPL-3.0-only",
+            "LGPL3+": "LGPL-3.0-or-later",
+            "MPL11": "MPL-1.1",
+            "MPL20": "MPL-2.0",
+            "CDDL": "CDDL-1.0",
+            "ZLIB": "Zlib",
+            "ISC": "ISC",
+            "POSTGRESQL": "PostgreSQL",
+            "ARTISTIC": "Artistic-1.0-Perl",
+            "ARTISTIC2": "Artistic-2.0",
+            "PHP202": "PHP-2.02",
+            "PHP30": "PHP-3.0",
+            "PHP301": "PHP-3.01",
+            "UNLICENSE": "Unlicense",
+            "OPENSSL": "OpenSSL",
+            "PSFL": "Python-2.0",
+            "RUBY": "Ruby",
+        }
+
+        # Remove common suffixes and convert to uppercase
+        cleaned_license = freebsd_license.upper().replace("LICENSE", "").replace(".TXT", "").strip()
+
+        # Check if the cleaned license is in our map
+        if cleaned_license in license_map:
+            return license_map[cleaned_license]
+
+        # If not found in the map, return the original license name
+        # This ensures we don't lose any license information we can't translate
+        return freebsd_license
+
 
     def process_system(self):
         distro_root = self.name.lower().replace("_", "-")
