@@ -211,7 +211,7 @@ class FreeBSDBuilder(DistroBuilder):
                 self.sbom_package.set_homepage(self.get("WWW"))
             arch_component=self.get("Architecture")
             if len(arch_component)> 0:
-                arch_component=f"?{arch_component}"
+                arch_component=f"&{arch_component}"
             self.sbom_package.set_purl(
                 f"pkg:generic/{package}@{version}?distro=freebsd{arch_component}"
             )
