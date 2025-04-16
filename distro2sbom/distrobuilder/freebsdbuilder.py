@@ -158,7 +158,6 @@ class FreeBSDBuilder(DistroBuilder):
             version = self.get("Version")
             if len(package) == 0:
                 print(f"error with {package_name} processing")
-                return 0
             self.sbom_package.initialise()
             self.sbom_package.set_name(package)
             self.sbom_package.set_version(version)
