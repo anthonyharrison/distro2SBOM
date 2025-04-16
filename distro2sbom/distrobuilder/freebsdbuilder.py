@@ -48,7 +48,7 @@ class FreeBSDBuilder(DistroBuilder):
                     "Organisation", self.system_data.get("id")
                 )
             else:
-                self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
+                self.sbom_package.set_supplier("Organisation", "freebsd")
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
@@ -190,7 +190,8 @@ class FreeBSDBuilder(DistroBuilder):
                 f"pkg:generic/{package}@{version}?distro=freebsd{arch_component}"
             )
             if len(supplier) > 1:
-                component_supplier = self.format_supplier(supplier, include_email=False)
+                component_supplier = 'freebsd'
+                #self.format_supplier(supplier, include_email=False)
                 cpe_version = version.replace(":", "\\:")
                 self.sbom_package.set_cpe(
                     f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*"
@@ -319,7 +320,7 @@ class FreeBSDBuilder(DistroBuilder):
         if self.system_data.get("id") is not None:
             self.sbom_package.set_supplier("Organisation", self.system_data.get("id"))
         else:
-            self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
+            self.sbom_package.set_supplier("Organisation", "freebsd")
         self.sbom_packages[
             (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
         ] = self.sbom_package.get_package()
