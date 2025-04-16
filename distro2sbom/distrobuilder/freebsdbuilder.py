@@ -40,9 +40,9 @@ class FreeBSDBuilder(DistroBuilder):
             self.sbom_package.set_version(self.release)
             self.sbom_package.set_type("operating-system")
             self.sbom_package.set_filesanalysis(False)
-            licenses = "NOASSERTION"
-            self.sbom_package.set_licensedeclared(licenses)
-            self.sbom_package.set_licenseconcluded(licenses)
+            license = "NOASSERTION"
+            self.sbom_package.set_licensedeclared(license)
+            self.sbom_package.set_licenseconcluded(license)
             if self.system_data.get("id") is not None:
                 self.sbom_package.set_supplier(
                     "Organisation", self.system_data.get("id")
@@ -74,9 +74,9 @@ class FreeBSDBuilder(DistroBuilder):
                     self.sbom_package.set_version(version)
                     self.sbom_package.set_type("application")
                     self.sbom_package.set_filesanalysis(False)
-                    licenses = "NOASSERTION"
-                    self.sbom_package.set_licensedeclared(licenses)
-                    self.sbom_package.set_licenseconcluded(licenses)
+                    license = "NOASSERTION"
+                    self.sbom_package.set_licensedeclared(license)
+                    self.sbom_package.set_licenseconcluded(license)
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     description = " ".join(n for n in line_element[3:])
                     self.sbom_package.set_summary(description)
@@ -101,7 +101,7 @@ class FreeBSDBuilder(DistroBuilder):
     def get_arch(self, arch_string):
         parts = arch_string.lower().split(':')
         if len(parts) != 3:
-            return "*"  # Return wildcard if the format is unexpected
+            return ""
 
         arch = parts[2]  # The architecture is the third part
 
@@ -115,6 +115,7 @@ class FreeBSDBuilder(DistroBuilder):
             "mips": "mips",
             "sparc64": "sparc",
             "riscv": "riscv",
+            "*": "*"  # architecture independent package
         }
 
         return arch_map.get(arch, arch)
@@ -165,9 +166,9 @@ class FreeBSDBuilder(DistroBuilder):
                 self.sbom_package.set_type("application")
             self.sbom_package.set_filesanalysis(False)
 
-            licenses = self.get_licenses(package_name)
-            self.sbom_package.set_licensedeclared(licenses)
-            self.sbom_package.set_licenseconcluded(licenses)
+            license = self.get_licenses(package_name)
+            self.sbom_package.set_licensedeclared(license)
+            self.sbom_package.set_licenseconcluded(license)
 
             supplier = self.get("Maintainer")
             if len(supplier.split()) > 3:
@@ -310,9 +311,9 @@ class FreeBSDBuilder(DistroBuilder):
         self.sbom_package.set_version(self.release)
         self.sbom_package.set_type("operating-system")
         self.sbom_package.set_filesanalysis(False)
-        licenses = "NOASSERTION"
-        self.sbom_package.set_licensedeclared(licenses)
-        self.sbom_package.set_licenseconcluded(licenses)
+        license = "NOASSERTION"
+        self.sbom_package.set_licensedeclared(license)
+        self.sbom_package.set_licenseconcluded(license)
         if self.system_data.get("home_url") is not None:
             self.sbom_package.set_homepage(self.system_data.get("home_url"))
         if self.system_data.get("id") is not None:
@@ -326,7 +327,7 @@ class FreeBSDBuilder(DistroBuilder):
         self.sbom_relationship.set_relationship(self.parent, "DESCRIBES", distro_root)
         self.sbom_relationships.append(self.sbom_relationship.get_relationship())
         # Get installed packages
-        out = self.pkg_command("info -a")
+        out = self.pkg_command('query %n:%v')
         for line in out:
             if ':' in line:
                 package_info = line.split(':', 1)
