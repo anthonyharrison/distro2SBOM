@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-import re
-from pathlib import Path
 
 from lib4sbom.data.package import SBOMPackage
 from lib4sbom.data.relationship import SBOMRelationship
@@ -68,7 +66,8 @@ class FreeBSDBuilder(DistroBuilder):
                     self.sbom_package.initialise()
                     if ":" in package:
                         package, arch = package.split(":", 1)
-                        arch_component = f"?arch={arch}"
+                        arch = self.get_arch(arch)
+                        arch_component = f"&arch={arch}"
                     else:
                         arch_component = ""
                     self.sbom_package.set_name(package)
@@ -98,6 +97,27 @@ class FreeBSDBuilder(DistroBuilder):
                     self.sbom_relationships.append(
                         self.sbom_relationship.get_relationship()
                     )
+
+    def get_arch(self, arch_string):
+        parts = arch_string.lower().split(':')
+        if len(parts) != 3:
+            return "*"  # Return wildcard if the format is unexpected
+
+        arch = parts[2]  # The architecture is the third part
+
+        arch_map = {
+            "i386": "x86",
+            "amd64": "x86_64",
+            "armv6": "armv6",
+            "armv7": "armv7",
+            "aarch64": "aarch64",
+            "powerpc": "ppc",
+            "mips": "mips",
+            "sparc64": "sparc",
+            "riscv": "riscv",
+        }
+
+        return arch_map.get(arch, arch)
 
     def get(self, attribute):
         if attribute in self.metadata:
@@ -134,20 +154,12 @@ class FreeBSDBuilder(DistroBuilder):
                     self.metadata[current_key] = value.strip()
                 elif current_key:
                     self.metadata[current_key] += " " + line.strip()
-            self.sbom_package.initialise()
             package = self.get("Name").lower().replace("_", "-")
-            # Attempt to do a quick conversion on a few package prefixes in freebsd. (likely should be done more sophisticated)
-            if package.startswith("p5-"):
-                package = package.replace("p5-", "perl-").replace(":", "-")
-            elif package.startswith("py"):
-                # of the form py39-mymodule-foobar-1.2.3
-                py_match = re.match(r'py(\d+)-(.*)', package)
-                if py_match:
-                    _, pkg_name = py_match.groups()
-                    package = f"python-{pkg_name}"
             version = self.get("Version")
             if len(package) == 0:
                 print(f"error with {package_name} processing")
+                return 0
+            self.sbom_package.initialise()
             self.sbom_package.set_name(package)
             self.sbom_package.set_version(version)
             if parent == "-":
@@ -171,9 +183,9 @@ class FreeBSDBuilder(DistroBuilder):
                 self.sbom_package.set_summary(self.get("Comment"))
             if self.get("WWW") != "":
                 self.sbom_package.set_homepage(self.get("WWW"))
-            arch_component=self.get("Architecture")
+            arch_component=self.get_arch(self.get("Architecture"))
             if len(arch_component)> 0:
-                arch_component=f"&{arch_component}"
+                arch_component=f"&arch={arch_component}"
             self.sbom_package.set_purl(
                 f"pkg:generic/{package}@{version}?distro=freebsd{arch_component}"
             )
