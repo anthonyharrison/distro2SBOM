@@ -13,6 +13,7 @@ from lib4sbom.generator import SBOMGenerator
 from lib4sbom.sbom import SBOM
 
 from distro2sbom.distrobuilder.dpkgbuilder import DpkgBuilder
+from distro2sbom.distrobuilder.freebsdbuilder import FreeBSDBuilder
 from distro2sbom.distrobuilder.rpmbuilder import RpmBuilder
 from distro2sbom.distrobuilder.windowsbuilder import WindowsBuilder
 from distro2sbom.version import VERSION
@@ -20,7 +21,7 @@ from distro2sbom.version import VERSION
 # CLI processing
 
 # Required support applications for package metadata information
-required_apps = {"deb": "dpkg", "rpm": "yum"}
+required_apps = {"deb": "dpkg", "rpm": "yum", "freebsd": "pkg"}
 
 
 def inpath(binary):
@@ -61,7 +62,7 @@ def main(argv=None):
         "--distro",
         action="store",
         default="auto",
-        choices=["rpm", "deb", "windows", "auto"],
+        choices=["rpm", "deb", "windows", "freebsd", "auto"],
         help="type of distribution (default: auto)",
     )
     input_group.add_argument(
@@ -272,6 +273,8 @@ def main(argv=None):
         sbom_build = RpmBuilder(args["name"], args["release"], args["debug"], namespace = args["distro_namespace"])
     elif distro_type == "windows":
         sbom_build = WindowsBuilder(args["name"], args["release"], args["debug"])
+    elif distro_type == "freebsd":
+        sbom_build = FreeBSDBuilder(args["name"], args["release"], args["debug"])
 
     if args["input_file"] != "":
         # Check file exists
