@@ -30,6 +30,7 @@ class DpkgBuilder(DistroBuilder):
             self.distro = self.get_namespace()
         self.parent = f"Distro-{self.name}"
         self.root = root
+        self.recommends = {}
 
     def parse_data(self, filename):
         # Process file containing installed applications
@@ -237,6 +238,9 @@ class DpkgBuilder(DistroBuilder):
                     self.parent, "DESCRIBES", package
                 )
             self.sbom_relationships.append(self.sbom_relationship.get_relationship())
+            # Remember recommends packages
+            if self.get("Recommends") != "":
+                self.recommends[package] = self.get("Recommends")
         elif self.debug:
             print(f"Package {package_name} not found")
         return len(out) > 0
@@ -292,3 +296,23 @@ class DpkgBuilder(DistroBuilder):
                     print(f"Processing... {module_name}")
                 if self.process_package(module_name, distro_root):
                     self.analyze(self.get("Package"), self.get("Depends"))
+        self.process_recommends()
+
+    def process_recommends(self):
+        # Add additional dependencies if recommended packages are installed
+        for package, extra_packages in self.recommends.items():
+            extra_dependent_packages = extra_packages.replace("|",",")
+            for r in extra_dependent_packages.split(","):
+                # Remove any version string information
+                dependency = r.strip().split(" ")[0].replace(":any", "")
+                if self.debug:
+                    print (f"Check if {dependency} included. {dependency in self.distro_packages}")
+                # if dependency installed, then add extra relationship
+                if dependency in self.distro_packages:
+                    if self.debug:
+                        print (f"Add relationship from {package} to {dependency}")
+                    self.sbom_relationship.initialise()
+                    self.sbom_relationship.set_relationship(
+                        package.lower(), "DEPENDS_ON", dependency
+                    )
+                    self.sbom_relationships.append(self.sbom_relationship.get_relationship())

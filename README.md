@@ -235,7 +235,7 @@ are therefore reminded that they should assert the quality of any data which is 
 When processing and validating licenses, the application will use a set of synonyms to attempt to map some license identifiers to the correct [SPDX License Identifiers](https://spdx.org/licenses/). However, the
 user of the tool is reminded that they should assert the quality of any data which is provided by the tool particularly where the license identifier has been modified.
 
-Dependencies between applications are only produced for the `--package` and `--system` options.
+Dependencies between applications are only produced for the `--package` and `--system` options. For Debian distributions, recommends dependencies will be shown with the `--system` option.
 
 The `--package` option is not supported if the `--distro` option is set to 'windows'.
 
