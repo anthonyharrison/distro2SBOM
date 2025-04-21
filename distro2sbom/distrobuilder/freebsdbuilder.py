@@ -99,7 +99,7 @@ class FreeBSDBuilder(DistroBuilder):
                     )
 
     def get_arch(self, arch_string):
-        parts = arch_string.lower().split(':')
+        parts = arch_string.lower().split(":")
         if len(parts) != 3:
             return ""
 
@@ -115,7 +115,7 @@ class FreeBSDBuilder(DistroBuilder):
             "mips": "mips",
             "sparc64": "sparc",
             "riscv": "riscv",
-            "*": "*"  # architecture independent package
+            "*": "*",  # architecture independent package
         }
 
         return arch_map.get(arch, arch)
@@ -183,15 +183,15 @@ class FreeBSDBuilder(DistroBuilder):
                 self.sbom_package.set_summary(self.get("Comment"))
             if self.get("WWW") != "":
                 self.sbom_package.set_homepage(self.get("WWW"))
-            arch_component=self.get_arch(self.get("Architecture"))
-            if len(arch_component)> 0:
-                arch_component=f"&arch={arch_component}"
+            arch_component = self.get_arch(self.get("Architecture"))
+            if len(arch_component) > 0:
+                arch_component = f"&arch={arch_component}"
             self.sbom_package.set_purl(
                 f"pkg:generic/{package}@{version}?distro=freebsd{arch_component}"
             )
             if len(supplier) > 1:
-                component_supplier = 'freebsd'
-                #self.format_supplier(supplier, include_email=False)
+                component_supplier = "freebsd"
+                # self.format_supplier(supplier, include_email=False)
                 cpe_version = version.replace(":", "\\:")
                 self.sbom_package.set_cpe(
                     f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*"
@@ -220,11 +220,11 @@ class FreeBSDBuilder(DistroBuilder):
             return
         for dependency in dependencies.split():
             # FreeBSD dependencies might include version requirements, strip them
-            dependency = dependency.split('>')[0].split('<')[0].split('=')[0].strip()
+            dependency = dependency.split(">")[0].split("<")[0].split("=")[0].strip()
             if dependency and self.process_package(dependency, parent):
                 # Recursively get dependencies for this package
                 sub_dependencies = self.pkg_command(f"info -d {dependency}")
-                self.analyze(dependency, ' '.join(sub_dependencies))
+                self.analyze(dependency, " ".join(sub_dependencies))
 
     def process_distro_package(self, module_name):
         self.parent = f"{self.name}-{self.release}-Package-{module_name}"
@@ -246,7 +246,7 @@ class FreeBSDBuilder(DistroBuilder):
 
         # Assume licenses are any of.
         # Return SPDX license expression
-        return ' OR '.join(licenses)
+        return " OR ".join(licenses)
 
     def translate_license_to_spdx(self, freebsd_license):
         # Common FreeBSD license translations
@@ -294,7 +294,9 @@ class FreeBSDBuilder(DistroBuilder):
         }
 
         # Remove common suffixes and convert to uppercase
-        cleaned_license = freebsd_license.upper().replace("LICENSE", "").replace(".TXT", "").strip()
+        cleaned_license = (
+            freebsd_license.upper().replace("LICENSE", "").replace(".TXT", "").strip()
+        )
 
         # Check if the cleaned license is in our map
         if cleaned_license in license_map:
@@ -303,7 +305,6 @@ class FreeBSDBuilder(DistroBuilder):
         # If not found in the map, return the original license name
         # This ensures we don't lose any license information we can't translate
         return freebsd_license
-
 
     def process_system(self):
         distro_root = self.name.lower().replace("_", "-")
@@ -328,14 +329,14 @@ class FreeBSDBuilder(DistroBuilder):
         self.sbom_relationship.set_relationship(self.parent, "DESCRIBES", distro_root)
         self.sbom_relationships.append(self.sbom_relationship.get_relationship())
         # Get installed packages
-        out = self.pkg_command('query %n:%v')
+        out = self.pkg_command("query %n:%v")
         for line in out:
-            if ':' in line:
-                package_info = line.split(':', 1)
+            if ":" in line:
+                package_info = line.split(":", 1)
                 if len(package_info) == 2:
                     module_name = package_info[0].strip()
                     if self.debug:
                         print(f"Processing... {module_name}")
                     if self.process_package(module_name, distro_root):
                         dependencies = self.pkg_command(f"info -d {module_name}")
-                        self.analyze(module_name, ' '.join(dependencies))
+                        self.analyze(module_name, " ".join(dependencies))

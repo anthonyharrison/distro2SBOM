@@ -70,7 +70,12 @@ class DpkgBuilder(DistroBuilder):
                     else:
                         architecture = line_element[2]
                     self.sbom_package.set_purl(
-                        self.get_purl(package, version, architecture, self.distro[:-1] if self.distro is not None else None)
+                        self.get_purl(
+                            package,
+                            version,
+                            architecture,
+                            self.distro[:-1] if self.distro is not None else None,
+                        )
                     )
                     self.sbom_package.set_name(package)
                     self.sbom_package.set_version(version)

@@ -208,13 +208,13 @@ def main(argv=None):
         print("[ERROR] distro name must be specified.")
         return -1
     elif args["input_file"] != "" and args["name"] is None and args["release"] is None:
-        print ("[ERROR] distro name and release must be specified.")
+        print("[ERROR] distro name and release must be specified.")
         return -1
     elif args["input_file"] == "" and args["package"] == "" and not args["system"]:
         print("[ERROR] distro file or package name must be specified.")
         return -1
     elif args["input_file"] != "" and args["distro_namespace"] == "":
-        print ("[ERROR] distro namespace must be specified.")
+        print("[ERROR] distro namespace must be specified.")
         return -1
 
     # Ensure format is aligned with type of SBOM
@@ -267,10 +267,19 @@ def main(argv=None):
 
     if distro_type == "deb":
         sbom_build = DpkgBuilder(
-            args["name"], args["release"], args["debug"], root=args["root"], namespace = args["distro_namespace"]
+            args["name"],
+            args["release"],
+            args["debug"],
+            root=args["root"],
+            namespace=args["distro_namespace"],
         )
     elif distro_type == "rpm":
-        sbom_build = RpmBuilder(args["name"], args["release"], args["debug"], namespace = args["distro_namespace"])
+        sbom_build = RpmBuilder(
+            args["name"],
+            args["release"],
+            args["debug"],
+            namespace=args["distro_namespace"],
+        )
     elif distro_type == "windows":
         sbom_build = WindowsBuilder(args["name"], args["release"], args["debug"])
     elif distro_type == "freebsd":

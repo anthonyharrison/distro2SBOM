@@ -52,7 +52,8 @@ class DistroBuilder:
         # Use RFC-5322 compliant regex (https://regex101.com/library/6EL6YF)
         emails = re.findall(
             r"((?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\]))",
-            supplier_info,re.IGNORECASE
+            supplier_info,
+            re.IGNORECASE,
         )
         supplier = " ".join(n for n in names)
         if include_email and len(emails) > 0:
@@ -81,7 +82,7 @@ class DistroBuilder:
             os_file = open(OS_FILE)
             lines = os_file.readlines()
             for line in lines:
-                if len(line.strip()) > 0 and '=' in line:
+                if len(line.strip()) > 0 and "=" in line:
                     data = line.split("=")
                     metadata[data[0].lower()] = data[1].replace('"', "").strip()
         return metadata
@@ -91,11 +92,11 @@ class DistroBuilder:
             self.namespace = namespace
 
     def get_namespace(self):
-        if self.namespace != None:
+        if self.namespace is not None:
             return f"{self.namespace}/"
         return self.namespace
 
-    def get_purl(self, package, version, architecture, distro = None):
+    def get_purl(self, package, version, architecture, distro=None):
         arch_component = architecture
         if len(arch_component) > 0:
             arch_component = f"?arch={arch_component}"

@@ -76,7 +76,7 @@ class RpmBuilder(DistroBuilder):
                 # Extract architecture from last element
                 architecture = line_element.split(".")[-1]
                 # Remove architecture component
-                product_release = product_release.replace(f".{architecture}","")
+                product_release = product_release.replace(f".{architecture}", "")
                 if product_version is not None:
                     # Find package name
                     package = item[: product_version.start()].lower().replace("_", "-")
@@ -90,8 +90,12 @@ class RpmBuilder(DistroBuilder):
                     self.sbom_package.set_licensedeclared(license)
                     self.sbom_package.set_licenseconcluded(license)
                     self.sbom_package.set_purl(
-                        self.get_purl(package, version, architecture,
-                                      self.distro[:-1] if self.distro is not None else None)
+                        self.get_purl(
+                            package,
+                            version,
+                            architecture,
+                            self.distro[:-1] if self.distro is not None else None,
+                        )
                     )
                     self.sbom_package.set_supplier("UNKNOWN", "NOASSERTION")
                     # Store package data
@@ -217,8 +221,12 @@ class RpmBuilder(DistroBuilder):
                 self.sbom_package.set_homepage(self.get("URL"))
             # External references
             self.sbom_package.set_purl(
-                self.get_purl(package, version, self.get("Architecture"),
-                              self.distro[:-1] if self.distro is not None else None)
+                self.get_purl(
+                    package,
+                    version,
+                    self.get("Architecture"),
+                    self.distro[:-1] if self.distro is not None else None,
+                )
             )
             if len(supplier) > 1:
                 component_supplier = self.format_supplier(supplier, include_email=False)
@@ -227,17 +235,11 @@ class RpmBuilder(DistroBuilder):
                     f"cpe:2.3:a:{component_supplier.replace(' ', '_').lower()}:{package}:{cpe_version}:*:*:*:*:*:*:*"
                 )
             if self.get("Build Date") != "":
-                self.sbom_package.set_value(
-                    "build_date", self.get("Build Date")
-                )
+                self.sbom_package.set_value("build_date", self.get("Build Date"))
             if self.get("Install Date") != "":
-                self.sbom_package.set_value(
-                    "release_date", self.get("Install Date")
-                )
+                self.sbom_package.set_value("release_date", self.get("Install Date"))
             if self.get("Size"):
-                self.sbom_package.set_property(
-                    "filesize", self.get("Size")
-                )
+                self.sbom_package.set_property("filesize", self.get("Size"))
             # Store package data
             self.sbom_packages[
                 (self.sbom_package.get_name(), self.sbom_package.get_value("version"))
@@ -297,7 +299,9 @@ class RpmBuilder(DistroBuilder):
         out = self.run_program(f"rpm {self.rpm_options} -qa")
         for line in out:
             # Parse line PRODUCT-VERSION[-Other]?. If pattern not followed ignore...
-            item = os.path.splitext(os.path.basename(line.strip().rstrip("\n")))[0].lower()
+            item = os.path.splitext(os.path.basename(line.strip().rstrip("\n")))[
+                0
+            ].lower()
             # Find start of version so that product name can be found
             product_version = re.search(r"-\d[.\d]*[a-z0-9]*", item)
             if product_version is None:
