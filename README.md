@@ -159,7 +159,7 @@ This option is not supported if the `--distro` option is set to 'windows'.
 
 The `--root` option is used to specify an alternative directory location for the installed packages. This option only applies for 'deb' distributions.
 
-The `--disto-namespace` option is used to specify a namespace to be included in the generated [PURL](https://github.com/package-url/purl-spec) identifiers for the packages. This is mandatory if the `--input-file` option is specified.
+The `--distro-namespace` option is used to specify a namespace to be included in the generated [PURL](https://github.com/package-url/purl-spec) identifiers for the packages. This is mandatory if the `--input-file` option is specified.
 
 At least one of the `--input-file`, `--package` or `--system` options must be specified. If multiple options are specified, the `--input-file` option followed by the `--system` option will be assumed.
 
