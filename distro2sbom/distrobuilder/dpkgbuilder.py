@@ -146,7 +146,9 @@ class DpkgBuilder(DistroBuilder):
         return self.run_program(f"{command} {command_string}")
 
     def process_package(self, package_name, parent="-"):
-        self.set_namespace(self.system_data.get("id"))
+        # Check if the namespace is overridden by args if not use the system
+        if not self.get_namespace():
+            self.set_namespace(self.system_data.get("id"))
         if self.debug:
             print(f"Process package {package_name}. Parent {parent}")
         # Check if we have already processed this package
