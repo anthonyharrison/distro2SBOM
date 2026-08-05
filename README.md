@@ -26,7 +26,7 @@ up for testing using different versions of Python.
 ## Usage
 
 ```
-usage: distro2sbom [-h] [--distro {rpm,deb,windows,freebsd,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-s] [--root ROOT] [--distro-namespace DISTRO_NAMESPACE]
+usage: distro2sbom [-h] [--distro {rpm,deb,windows,freebsd,apk,auto}] [-i INPUT_FILE] [-n NAME] [-r RELEASE] [-p PACKAGE] [-s] [--root ROOT] [--distro-namespace DISTRO_NAMESPACE]
                    [--product-type {application,framework,library,container,operating-system,device,firmware,file}] [--product-name PRODUCT_NAME] [--product-version PRODUCT_VERSION]
                    [--product-author PRODUCT_AUTHOR] [-d] [--sbom {spdx,cyclonedx}] [--format {tag,json,yaml}] [-o OUTPUT_FILE] [-V]
 
@@ -37,7 +37,7 @@ options:
   -V, --version         show program's version number and exit
 
 Input:
-  --distro {rpm,deb,windows,auto}
+  --distro {rpm,deb,windows,freebsd,apk,auto}
                         type of distribution (default: auto)
   -i INPUT_FILE, --input-file INPUT_FILE
                         name of distribution file
@@ -148,6 +148,25 @@ The `--input-file` option is used to provide a filename containing the list of p
   zstd-1.5.6                     Fast real-time compression algorithm
   ```
 
+- apk. The file used is the output of the following command
+    ```bash
+    apk list --installed > [filename.out]
+    ```
+
+    Sample file contents
+    ```console
+  alpine-baselayout-3.6.5-r0 x86_64 {alpine-baselayout} (GPL-2.0-only) [installed]
+  alpine-baselayout-data-3.6.5-r0 x86_64 {alpine-baselayout} (GPL-2.0-only) [installed]
+  alpine-keys-2.4-r1 x86_64 {alpine-keys} (MIT) [installed]
+  apk-tools-2.14.4-r1 x86_64 {apk-tools} (GPL-2.0-only) [installed]
+  busybox-1.36.1-r31 x86_64 {busybox} (GPL-2.0-only) [installed]
+  ca-certificates-bundle-20240705-r0 x86_64 {ca-certificates} (MPL-2.0 AND MIT) [installed]
+  musl-1.2.5-r3 x86_64 {musl} (MIT) [installed]
+    ```
+
+    The output of `apk info -v` is also accepted, although it only reports the name and
+    version of each package.
+
 
 If the specified filename is not found, the tool will terminate.
 
@@ -157,7 +176,15 @@ This option is not supported if the `--distro` option is set to 'windows'.
 The `--system` option is used to generate an SBOM for all the applications installed on the system. Note that this option will take some time to complete as it is dependent on the number of installed applications.
 This option is not supported if the `--distro` option is set to 'windows'.
 
-The `--root` option is used to specify an alternative directory location for the installed packages. This option only applies for 'deb' distributions.
+The `--root` option is used to specify an alternative directory location for the installed packages. This option only applies for 'deb' and 'apk' distributions.
+
+For 'apk' distributions, the package metadata is read from the apk installed database (`lib/apk/db/installed`) rather than by running the `apk` application.
+An SBOM can therefore be generated for an Alpine distribution which is installed at another location, such as an unpacked container image, without the
+`apk` application being available.
+
+```bash
+distro2sbom --distro apk --system --root <path to distribution> --sbom cyclonedx --format json --output-file <distrooutfile>
+```
 
 The `--distro-namespace` option is used to specify a namespace to be included in the generated [PURL](https://github.com/package-url/purl-spec) identifiers for the packages. This is mandatory if the `--input-file` option is specified.
 
@@ -241,6 +268,9 @@ The `--package` option is not supported if the `--distro` option is set to 'wind
 
 Whilst [PURL](https://github.com/package-url/purl-spec) and [CPE](https://nvd.nist.gov/products/cpe) references are automatically generated for components, the accuracy
 of such references cannot be guaranteed as they are dependent on the validity of the data associated with the component.
+
+CPE references are not generated for 'apk' distributions. The maintainer of an Alpine package is an individual rather than the vendor of the software, so a CPE
+derived from the package metadata would not match the references published for the component.
 
 ## Feedback and Contributions
 
