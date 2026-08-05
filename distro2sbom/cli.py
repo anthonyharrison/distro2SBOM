@@ -12,6 +12,7 @@ from lib4sbom.data.document import SBOMDocument
 from lib4sbom.generator import SBOMGenerator
 from lib4sbom.sbom import SBOM
 
+from distro2sbom.distrobuilder.apkbuilder import ApkBuilder
 from distro2sbom.distrobuilder.dpkgbuilder import DpkgBuilder
 from distro2sbom.distrobuilder.freebsdbuilder import FreeBSDBuilder
 from distro2sbom.distrobuilder.rpmbuilder import RpmBuilder
@@ -21,7 +22,12 @@ from distro2sbom.version import VERSION
 # CLI processing
 
 # Required support applications for package metadata information
-required_apps = {"deb": "dpkg", "rpm": "yum", "freebsd": "pkg"}
+required_apps = {"deb": "dpkg", "rpm": "yum", "freebsd": "pkg", "apk": "apk"}
+
+# Distributions for which package metadata is obtained without running a
+# support application. These are able to report on a distribution which is
+# installed at an alternative location (specified using the --root option).
+self_contained = ["apk"]
 
 
 def inpath(binary):
@@ -62,7 +68,7 @@ def main(argv=None):
         "--distro",
         action="store",
         default="auto",
-        choices=["rpm", "deb", "windows", "freebsd", "auto"],
+        choices=["rpm", "deb", "windows", "freebsd", "apk", "auto"],
         help="type of distribution (default: auto)",
     )
     input_group.add_argument(
@@ -259,7 +265,11 @@ def main(argv=None):
     else:
         distro_type = args["distro"]
         # Check required application available to produce package level SBOM
-        if args["package"] > "" and not inpath(required_apps[distro_type]):
+        if (
+            args["package"] > ""
+            and distro_type not in self_contained
+            and not inpath(required_apps[distro_type])
+        ):
             print(
                 "[ERROR] Unable to produce package information for specified distribution."
             )
@@ -284,6 +294,14 @@ def main(argv=None):
         sbom_build = WindowsBuilder(args["name"], args["release"], args["debug"])
     elif distro_type == "freebsd":
         sbom_build = FreeBSDBuilder(args["name"], args["release"], args["debug"])
+    elif distro_type == "apk":
+        sbom_build = ApkBuilder(
+            args["name"],
+            args["release"],
+            args["debug"],
+            root=args["root"],
+            namespace=args["distro_namespace"],
+        )
 
     if args["input_file"] != "":
         # Check file exists
