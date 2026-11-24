@@ -1,4 +1,4 @@
-# Copyright (C) 2025 Anthony Harrison
+# Copyright (C) 2026 Anthony Harrison
 # SPDX-License-Identifier: Apache-2.0
 
-VERSION: str = "0.6.0"
+VERSION: str = "0.7.0"

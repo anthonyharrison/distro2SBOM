@@ -21,7 +21,7 @@ from distro2sbom.version import VERSION
 # CLI processing
 
 # Required support applications for package metadata information
-required_apps = {"deb": "dpkg", "rpm": "yum", "freebsd": "pkg"}
+required_apps = {"deb": "dpkg", "rpm": "yum", "freebsd": "pkg", "brew" : "brew"}
 
 
 def inpath(binary):
@@ -62,7 +62,7 @@ def main(argv=None):
         "--distro",
         action="store",
         default="auto",
-        choices=["rpm", "deb", "windows", "freebsd", "auto"],
+        choices=["rpm", "deb", "windows", "freebsd", "brew", "auto"],
         help="type of distribution (default: auto)",
     )
     input_group.add_argument(
@@ -284,6 +284,8 @@ def main(argv=None):
         sbom_build = WindowsBuilder(args["name"], args["release"], args["debug"])
     elif distro_type == "freebsd":
         sbom_build = FreeBSDBuilder(args["name"], args["release"], args["debug"])
+    elif distro_type == "brew":
+        sbom_build = BrewBuilder(args["name"], args["release"], args["debug"])
 
     if args["input_file"] != "":
         # Check file exists
